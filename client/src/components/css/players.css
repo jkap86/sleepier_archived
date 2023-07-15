@@ -1,15 +1,13 @@
 div.modal {
   position: absolute;
-  width: fit-content;
-  height: fit-content;
-  top: 25%;
+  width: 100%;
+  height: inherit;
   left: 0;
   right: 0;
   margin: auto;
   z-index: 100;
   background-color: transparent;
 }
-
 div.modal div.modal-grid {
   width: 80rem;
   height: fit-content;
@@ -24,7 +22,6 @@ div.modal div.modal-grid {
   border: 2rem ridge var(--te);
   overflow: auto;
 }
-
 div.modal div.modal-grid button.close {
   position: absolute;
   top: 2.5rem;
@@ -35,37 +32,30 @@ div.modal div.modal-grid button.close {
   background-color: transparent;
   border: none;
 }
-
 div.modal div.modal-grid div.modal-grid-item {
   display: grid;
   grid-template-columns: 33% 33% 33%;
   padding-bottom: 5rem;
   white-space: nowrap;
 }
-
 div.modal div.modal-grid div.modal-grid-item input {
   background-color: var(--color2);
   text-align: center;
   font-weight: 900;
   font-size: 2.5rem;
 }
-
 div.modal div.modal-grid div.modal-grid-item div.modal-grid-content.header {
   grid-column: 1/span 3;
 }
-
 div.modal div.modal-grid div.modal-grid-item div.modal-grid-content input[type=number] {
   width: 7rem;
 }
-
 div.modal div.modal-grid div.modal-grid-item div.modal-grid-content.one {
   grid-column: 1/span 1;
 }
-
 div.modal div.modal-grid div.modal-grid-item div.modal-grid-content.two {
   grid-column: 2/span 1;
 }
-
 div.modal div.modal-grid div.modal-grid-item div.modal-grid-content.three {
   grid-column: 3/span 1;
 }
@@ -76,7 +66,6 @@ span.team {
   width: fit-content;
   margin: 0 1rem;
 }
-
 span.team label {
   position: relative;
   width: fit-content;
@@ -86,7 +75,6 @@ span.team label {
   align-items: center;
   justify-content: center;
 }
-
 span.team label strong.draft-year {
   font-size: 5rem;
   position: relative;
@@ -95,12 +83,10 @@ span.team label strong.draft-year {
   filter: contrast(2);
   text-shadow: 0 0 1rem black;
 }
-
 span.team label img.icon {
   width: 7rem;
   height: 7rem;
 }
-
 span.team label i.icon {
   font-size: 7rem;
   text-shadow: 0 0 1rem black;
@@ -109,7 +95,6 @@ span.team label i.icon {
   z-index: 0;
   opacity: 0.5;
 }
-
 span.team label select.hidden_behind {
   position: absolute;
   top: 0;
@@ -123,7 +108,6 @@ span.team label select.hidden_behind {
   margin: 0;
   width: 100%;
 }
-
 span.team label select.hidden_behind option {
   font-family: "Pulang", sans-serif;
   background-color: #9ca7b4;
@@ -131,7 +115,6 @@ span.team label select.hidden_behind option {
   text-align: center;
   filter: contrast(2);
 }
-
 span.team label div.position_square1,
 span.team label div.position_square2,
 span.team label div.position_square3,
@@ -144,7 +127,6 @@ span.team label div.position_square4 {
   border-radius: 1rem;
   overflow: hidden;
 }
-
 span.team label div.position_square1 div,
 span.team label div.position_square2 div,
 span.team label div.position_square3 div,
@@ -157,35 +139,30 @@ span.team label div.position_square4 div {
   font-weight: 900;
   font-size: 3rem;
 }
-
 span.team label div.position_square1 div.qb,
 span.team label div.position_square2 div.qb,
 span.team label div.position_square3 div.qb,
 span.team label div.position_square4 div.qb {
   background-color: var(--qb);
 }
-
 span.team label div.position_square1 div.wr,
 span.team label div.position_square2 div.wr,
 span.team label div.position_square3 div.wr,
 span.team label div.position_square4 div.wr {
   background-color: var(--wr);
 }
-
 span.team label div.position_square1 div.te,
 span.team label div.position_square2 div.te,
 span.team label div.position_square3 div.te,
 span.team label div.position_square4 div.te {
   background-color: var(--te);
 }
-
 span.team label div.position_square1 div.rb,
 span.team label div.position_square2 div.rb,
 span.team label div.position_square3 div.rb,
 span.team label div.position_square4 div.rb {
   background-color: var(--rb);
 }
-
 span.team label div.position_square1 div.picks,
 span.team label div.position_square2 div.picks,
 span.team label div.position_square3 div.picks,
@@ -194,19 +171,15 @@ span.team label div.position_square4 div.picks {
   color: white;
   text-shadow: none;
 }
-
 span.team label div.position_square1 div {
   width: 100%;
 }
-
 span.team label div.position_square2 div {
   width: 50%;
 }
-
 span.team label div.position_square3 div {
   width: 33%;
 }
-
 span.team label div.position_square4 div {
   flex-basis: 50%;
 }

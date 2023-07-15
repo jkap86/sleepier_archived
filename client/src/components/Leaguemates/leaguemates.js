@@ -2,15 +2,16 @@ import TableMain from "../Home/tableMain";
 import { setState } from "../../actions/actions";
 import LeaguemateLeagues from './leaguemateLeagues'
 import { useSelector, useDispatch } from 'react-redux';
+import { filterLeagues } from "../Home/functions/filterLeagues";
 
 const Leaguemates = ({ }) => {
     const dispatch = useDispatch();
     const { itemActive, page, searched } = useSelector(state => state.leaguemates);
     const { user: state_user } = useSelector(state => state.user)
     const { filteredData } = useSelector(state => state.filteredData)
+    const { type1, type2 } = useSelector(state => state.main);
 
     const stateLeaguemates = filteredData.leaguemates || []
-
 
     const leaguemates_headers = [
         [
@@ -62,10 +63,12 @@ const Leaguemates = ({ }) => {
         ]
     ]
 
+
     const leaguemates_body = (stateLeaguemates || [])
-        ?.filter(x => x.username !== state_user.username)
-        ?.sort((a, b) => b.leagues?.length - a.leagues?.length)
+        ?.filter(x => x.username !== state_user.username && (!searched?.id || searched.id === x.user_id))
+        ?.sort((a, b) => filterLeagues(b.leagues, type1, type2)?.length - filterLeagues(a.leagues, type1, type2)?.length)
         ?.map(lm => {
+            const lm_leagues = filterLeagues(lm.leagues, type1, type2)
             return {
                 id: lm.user_id,
                 search: {
@@ -88,17 +91,17 @@ const Leaguemates = ({ }) => {
                         }
                     },
                     {
-                        text: lm.leagues?.length,
+                        text: lm_leagues?.length.toString(),
                         colSpan: 1
                     },
                     {
                         text: (
-                            lm.leagues?.reduce((acc, cur) => acc + cur.lmRoster.settings?.wins, 0) +
+                            lm_leagues?.reduce((acc, cur) => acc + cur.lmRoster.settings?.wins, 0) +
                             "-" +
-                            lm.leagues?.reduce((acc, cur) => acc + cur.lmRoster.settings?.losses, 0) +
+                            lm_leagues?.reduce((acc, cur) => acc + cur.lmRoster.settings?.losses, 0) +
                             (
-                                lm.leagues?.reduce((acc, cur) => acc + cur.lmRoster.settings.ties, 0) > 0 ?
-                                    `-${lm.leagues?.reduce((acc, cur) => acc + cur.lmRoster.settings.ties, 0)}` :
+                                lm_leagues?.reduce((acc, cur) => acc + cur.lmRoster.settings.ties, 0) > 0 ?
+                                    `-${lm_leagues?.reduce((acc, cur) => acc + cur.lmRoster.settings.ties, 0)}` :
                                     ''
                             )
                         ),

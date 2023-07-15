@@ -1,15 +1,56 @@
 import { useSelector, useDispatch } from "react-redux";
-import { avatar } from "../Home/functions/misc";
+import { avatar, ppr_scoring_settings } from "../Home/functions/misc";
 import { setState } from "../../actions/actions";
-import { forwardRef, useMemo, useState } from "react";
+import { forwardRef, useMemo, useState, useEffect } from "react";
+import { getPlayerScore } from "../Home/functions/getPlayerScore";
 
 const PlayerBreakdownModal = forwardRef(({
     player_id
-}, ref) => {
+}, playerBreakdownRef) => {
     const dispatch = useDispatch();
     const { user } = useSelector(state => state.user);
     const { allPlayers, projections } = useSelector(state => state.main);
+    const { playerBreakdownModal } = useSelector(state => state.lineups);
     const [projectionEdits, setProjectionEdits] = useState({})
+
+
+    useEffect(() => {
+        // Disable scroll when the component mounts
+        document.body.style.overflow = 'hidden';
+
+        // Enable scroll when the component unmounts
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, []);
+
+    const closeModal = (e) => {
+
+        dispatch(setState({
+            projections: {
+                ...projections,
+                [player_id]: {
+                    stats: {
+                        ...projections[player_id].stats,
+                        ...projectionEdits,
+                        pts_ppr_update: getPlayerScore([{ stats: { ...projections[player_id].stats, ...projectionEdits } }], ppr_scoring_settings, true)
+                    }
+                }
+            }
+        }, 'MAIN'))
+        dispatch(setState({ playerBreakdownModal: false }, 'LINEUPS'))
+    }
+
+
+
+    useEffect(() => {
+        if (playerBreakdownRef.current) {
+            playerBreakdownRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            })
+        }
+    }, [playerBreakdownModal, playerBreakdownRef])
 
     const stat_categories = useMemo(() => {
         return Array.from(
@@ -40,23 +81,9 @@ const PlayerBreakdownModal = forwardRef(({
             })
     }, [user.leagues])
 
-    return <div className="modal">
-        <div className="modal-grid" ref={ref}>
-            <button className="close" onClick={(e) => {
-                e.stopPropagation()
-                dispatch(setState({
-                    projections: {
-                        ...projections,
-                        [player_id]: {
-                            stats: {
-                                ...projections[player_id].stats,
-                                ...projectionEdits
-                            }
-                        }
-                    }
-                }, 'MAIN'))
-                dispatch(setState({ playerBreakdownModal: false }, 'LINEUPS'))
-            }}>X</button>
+    return <div className="modal" >
+        <div className="modal-grid" ref={playerBreakdownRef}>
+            <button className="close" onClick={closeModal}>X</button>
             <table className="modal">
                 <caption>
                     <strong>

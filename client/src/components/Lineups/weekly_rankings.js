@@ -25,38 +25,6 @@ const WeeklyRankings = ({
     const { rankings, notMatched, filename, error, playerBreakdownModal } = useSelector(state => state.lineups)
     const playerBreakdownRef = useRef(null);
 
-    useEffect(() => {
-        const handleExitModal = (ref, setState) => {
-            return (event) => {
-                if (!ref.current || !ref.current.contains(event.target)) {
-
-                    setState(false)
-                }
-            }
-        };
-
-        const handleExitPlayerBreakdownModal = handleExitModal(playerBreakdownRef, (value) => dispatch(setState({ playerBreakdownModal: value }, 'LINEUPS')))
-
-
-        document.addEventListener('mousedown', handleExitPlayerBreakdownModal)
-        document.addEventListener('touchstart', handleExitPlayerBreakdownModal)
-
-
-        return () => {
-            document.removeEventListener('mousedown', handleExitPlayerBreakdownModal);
-            document.removeEventListener('touchstart', handleExitPlayerBreakdownModal);
-        };
-    }, [])
-
-
-    useEffect(() => {
-        if (playerBreakdownRef.current) {
-            playerBreakdownRef.current.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            })
-        }
-    }, [playerBreakdownModal])
 
     const weekly_rankings_headers = [
         [
@@ -90,7 +58,7 @@ const WeeklyRankings = ({
                             className={'fa fa-trash click'}
                         >
                         </i>
-                        <p>Rank</p>
+                        <p>{rankings ? 'Rank' : 'PPR'}</p>
                     </span>
                     : <span
                         className="icon"
@@ -100,7 +68,7 @@ const WeeklyRankings = ({
                             className={'fa fa-edit click'}
                         >
                         </i>
-                        <p>Rank</p>
+                        <p>{rankings ? 'Rank' : 'PPR'}</p>
                     </span>,
                 colSpan: 1
             },
@@ -185,10 +153,15 @@ const WeeklyRankings = ({
                     },
                     edit && {
                         text: <input
-                            value={rankings && rankings[player_id].newRank || projections && projections[player_id].stats.pts_ppr}
+                            value={rankings && rankings[player_id].newRank || projections && projections[player_id].stats.pts_ppr_update || projections[player_id].stats.pts_ppr}
                             className={'editRank'}
                             onChange={(e) => rankings && handleRankChange([{ rank: e.target.value, player_id: player_id }])}
-                            onClick={() => !rankings && dispatch(setState({ playerBreakdownModal: player_id }, 'LINEUPS'))}
+                            onClick={(e) => {
+                                if (!rankings && !playerBreakdownModal) {
+                                    e.stopPropagation()
+                                    dispatch(setState({ playerBreakdownModal: player_id }, 'LINEUPS'))
+                                }
+                            }}
                             type={!rankings && "button"}
                         />,
                         colSpan: 2
@@ -328,6 +301,20 @@ const WeeklyRankings = ({
                     </>
             }
             {filename}
+            &nbsp;
+            {
+                rankings && <button className="close" onClick={() => {
+                    dispatch(setState({
+                        rankings: null,
+                        notMatched: [],
+                        filename: '',
+                        error: null,
+                        playerBreakdownModal: false
+                    }, 'LINEUPS'))
+                }}>
+                    X
+                </button>
+            }
             {
                 error || notMatched?.length > 0 ?
                     <>
@@ -385,29 +372,29 @@ const WeeklyRankings = ({
             }
         </h1>
 
-        <div className="relative">
-            {
-                !playerBreakdownModal
-                    ? null
-                    : <PlayerBreakdownModal
-                        player_id={playerBreakdownModal}
-                        ref={playerBreakdownRef}
-                    />
-            }
-            <TableMain
-                id={'Rankings'}
-                type={'primary'}
-                headers={weekly_rankings_headers}
-                body={weekly_rankings_body}
-                page={page}
-                setPage={setPage}
-                search={true}
-                searched={searched}
-                setSearched={setSearched}
-                options1={[teamFilter]}
-                options2={[positionFilter]}
-            />
-        </div>
+        {
+            !playerBreakdownModal
+                ? null
+                : <PlayerBreakdownModal
+                    player_id={playerBreakdownModal}
+                    ref={playerBreakdownRef}
+                />
+        }
+
+        <TableMain
+            id={'Rankings'}
+            type={'primary'}
+            headers={weekly_rankings_headers}
+            body={weekly_rankings_body}
+            page={page}
+            setPage={setPage}
+            search={true}
+            searched={searched}
+            setSearched={setSearched}
+            options1={[teamFilter]}
+            options2={[positionFilter]}
+        />
+
     </>
 }
 

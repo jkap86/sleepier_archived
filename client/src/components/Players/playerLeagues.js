@@ -32,27 +32,7 @@ const PlayerLeagues = ({
         }
     }, [players.modalVisible.player2])
 
-    useEffect(() => {
-        const handleExitModal = (ref, setState) => {
-            return (event) => {
-                if (!ref.current || !ref.current.contains(event.target)) {
 
-                    setState(false)
-                }
-            }
-        };
-
-
-        const handleExitPlayerModal = handleExitModal(playerModalRef, (value) => dispatch(setState({ modalVisible: { ...players.modalVisible, player2: value } }, 'PLAYERS')))
-
-        document.addEventListener('mousedown', handleExitPlayerModal)
-        document.addEventListener('touchstart', handleExitPlayerModal)
-
-        return () => {
-            document.removeEventListener('mousedown', handleExitPlayerModal);
-            document.removeEventListener('touchstart', handleExitPlayerModal);
-        };
-    }, [])
 
     let player_leagues_headers = [
         [
@@ -117,7 +97,8 @@ const PlayerLeagues = ({
                                 e.stopPropagation()
                                 dispatch(setState({
                                     modalVisible: {
-                                        ...players.modalVisible,
+                                        options: false,
+                                        player: false,
                                         player2: {
                                             ...stateAllPlayers[player_id],
                                             trend_games: trend_games,
@@ -163,7 +144,15 @@ const PlayerLeagues = ({
                     getPlayerScore={getPlayerScore}
                     snapPercentageMin={snapPercentageMin}
                     snapPercentageMax={snapPercentageMax}
-                    setPlayerModalVisible2={(value) => dispatch(setState({ modalVisible: { ...players.modalVisible, player2: value } }, 'PLAYERS'))}
+                    setPlayerModalVisible2={(value) => {
+                        dispatch(setState({
+                            modalVisible: {
+                                options: false,
+                                player: false,
+                                player2: value
+                            }
+                        }, 'PLAYERS'))
+                    }}
                     type='tertiary'
 
                 />

@@ -4,11 +4,12 @@ import LeaguematePlayersLeagues from "./leaguematePlayersLeagues"
 import TradeTipRosters from "../Trades/tradeTipRosters";
 import { useSelector, useDispatch } from 'react-redux';
 import { setState } from "../../actions/actions";
+import { filterLeagues } from "../Home/functions/filterLeagues";
 
 const LeaguemateLeagues = ({ leaguemate }) => {
     const dispatch = useDispatch();
     const { user: state_user } = useSelector(state => state.user)
-    const { allPlayers: stateAllPlayers } = useSelector(state => state.main)
+    const { allPlayers: stateAllPlayers, type1, type2 } = useSelector(state => state.main)
     const leaguemates = useSelector(state => state.leaguemates);
     const initialLoadRef = useRef(null);
 
@@ -25,7 +26,7 @@ const LeaguemateLeagues = ({ leaguemate }) => {
     const playersCount = useMemo(() => {
         const players_all = []
 
-        leaguemate.leagues.map(league => {
+        filterLeagues(leaguemate.leagues, type1, type2).map(league => {
             return league.lmRoster.players.map(player => {
                 return players_all.push({
                     id: player,
@@ -94,7 +95,9 @@ const LeaguemateLeagues = ({ leaguemate }) => {
 
         return players_count;
 
-    }, [leaguemate])
+    }, [leaguemate, type1, type2])
+
+
     const leaguemateLeagues_headers = [
         [
             {
@@ -138,7 +141,7 @@ const LeaguemateLeagues = ({ leaguemate }) => {
         ]
     ]
 
-    const leaguemateLeagues_body = leaguemate.leagues.map((lm_league) => {
+    const leaguemateLeagues_body = filterLeagues(leaguemate.leagues, type1, type2).map((lm_league) => {
         return {
             id: lm_league.league_id,
             list: [

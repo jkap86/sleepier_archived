@@ -11,11 +11,10 @@ import { loadingIcon, ppr_scoring_settings, getTrendColor, category_dropdown } f
 import { draftClassFilterIcon, positionFilterIcon, teamFilterIcon } from "../Home/functions/filterIcons";
 import { filterLeagues } from "../Home/functions/filterLeagues";
 import { getPlayerScore } from "../Home/functions/getPlayerScore";
+import TrendModal from "./trendModal";
 
 const Players = ({ }) => {
     const dispatch = useDispatch();
-    const [snapPercentageMin, setSnapPercentageMin] = useState(0)
-    const [snapPercentageMax, setSnapPercentageMax] = useState(100)
     const { isLoadingUser, errorUser, user } = useSelector((state) => state.user);
     const { state, type1, type2, allPlayers } = useSelector(state => state.main);
     const { filteredData } = useSelector(state => state.filteredData);
@@ -62,33 +61,7 @@ const Players = ({ }) => {
         }
     }, [players.modalVisible.player])
 
-    useEffect(() => {
-        const handleExitModal = (ref, setState) => {
-            return (event) => {
-                if (!ref.current || !ref.current.contains(event.target)) {
 
-                    setState(false)
-                }
-            }
-        };
-
-        const handleExitFiltersModal = handleExitModal(modalRef, (value) => dispatch(setState({ modalVisible: { ...players.modalVisible, options: value } }, 'PLAYERS')))
-        const handleExitPlayerModal = handleExitModal(playerModalRef, (value) => dispatch(setState({ modalVisible: { ...players.modalVisible, player: value } }, 'PLAYERS')))
-
-        document.addEventListener('mousedown', handleExitFiltersModal)
-        document.addEventListener('touchstart', handleExitFiltersModal)
-
-        document.addEventListener('mousedown', handleExitPlayerModal)
-        document.addEventListener('touchstart', handleExitPlayerModal)
-
-        return () => {
-            document.removeEventListener('mousedown', handleExitFiltersModal);
-            document.removeEventListener('touchstart', handleExitFiltersModal);
-
-            document.removeEventListener('mousedown', handleExitPlayerModal);
-            document.removeEventListener('touchstart', handleExitPlayerModal);
-        };
-    }, [])
 
     useEffect(() => {
 
@@ -99,25 +72,7 @@ const Players = ({ }) => {
         }
     }, [players.searched, type1, type2, dispatch])
 
-    const handleMaxMinChange = (type, value) => {
 
-        switch (type) {
-            case 'minsnappct':
-                snapPercentageMin > snapPercentageMax && setSnapPercentageMax(value)
-                break;
-            case 'maxsnappct':
-                snapPercentageMin > snapPercentageMax && setSnapPercentageMin(value)
-                break;
-            case 'mintrend':
-                players.trendDateStart > players.trendDateEnd && dispatch(setState({ trendDateEnd: value }, 'PLAYERS'))
-                break;
-            case 'maxtrend':
-                players.trendDateStart > players.trendDateEnd && dispatch(setState({ trendDateStart: value }, 'PLAYERS'))
-                break;
-            default:
-                break
-        }
-    }
 
     const playerShares_headers = [
         [
@@ -191,8 +146,8 @@ const Players = ({ }) => {
                         ?.filter(
                             s =>
                                 s.stats.tm_off_snp > 0
-                                && ((s.stats.snp || s.stats.off_snp || 0) / (s.stats.tm_off_snp) * 100 >= snapPercentageMin)
-                                && ((s.stats.snp || s.stats.off_snp || 0) / (s.stats.tm_off_snp) * 100 <= snapPercentageMax)
+                                && ((s.stats.snp || s.stats.off_snp || 0) / (s.stats.tm_off_snp) * 100 >= players.snapPercentageMin)
+                                && ((s.stats.snp || s.stats.off_snp || 0) / (s.stats.tm_off_snp) * 100 <= players.snapPercentageMax)
 
                         ) || []
 
@@ -358,12 +313,13 @@ const Players = ({ }) => {
                                             dispatch(setState({
                                                 itemActive: player.id,
                                                 modalVisible: {
-                                                    ...players.modalVisible,
+                                                    options: false,
                                                     player: {
                                                         ...allPlayers[player.id],
                                                         trend_games: trend_games,
                                                         scoring_settings: ppr_scoring_settings
-                                                    }
+                                                    },
+                                                    player2: false
                                                 }
                                             }, 'PLAYERS'))
                                         }
@@ -388,8 +344,6 @@ const Players = ({ }) => {
                                 leagues_available={leagues_available}
                                 stateStats={stats}
                                 trend_games={trend_games}
-                                snapPercentageMin={snapPercentageMin}
-                                snapPercentageMax={snapPercentageMax}
                                 player_id={player.id}
                                 allPlayers={allPlayers}
                                 getPlayerScore={getPlayerScore}
@@ -462,67 +416,9 @@ const Players = ({ }) => {
             : <>
                 {
                     players.modalVisible.options ?
-                        <div className="modal" >
-                            <div className="modal-grid" ref={modalRef}>
-                                <button className="close" onClick={() => dispatch(setState({ modalVisible: { ...players.modalVisible, options: false } }, 'PLAYERS'))}>X</button>
-                                <div className="modal-grid-item">
-                                    <div className="modal-grid-content header"><strong>Trend Range</strong>
-                                    </div>
-                                    <div className="modal-grid-content one">
-
-                                        <input
-                                            type={'date'}
-                                            value={players.trendDateStart}
-                                            onChange={(e) => e.target.value && dispatch(setState({ trendDateStart: new Date(e.target.value).toISOString().split('T')[0] }, 'PLAYERS'))}
-                                            onBlur={(e) => handleMaxMinChange('mintrend', e.target.value)}
-                                            onMouseLeave={(e) => handleMaxMinChange('mintrend', e.target.value)}
-                                            onMouseEnter={(e) => handleMaxMinChange('maxtrend', e.target.value)}
-                                        />
-
-                                    </div>
-                                    <div className="modal-grid-content three">
-
-                                        <input
-                                            type={'date'}
-                                            value={players.trendDateEnd}
-                                            onChange={(e) => e.target.value && dispatch(setState({ trendDateEnd: new Date(e.target.value).toISOString().split('T')[0] }, 'PLAYERS'))}
-                                            onBlur={(e) => handleMaxMinChange('maxtrend', e.target.value)}
-                                            onMouseLeave={(e) => handleMaxMinChange('maxtrend', e.target.value)}
-                                            onMouseEnter={(e) => handleMaxMinChange('mintrend', e.target.value)}
-                                        />
-
-                                    </div>
-                                </div>
-                                <div className="modal-grid-item">
-                                    <div className="modal-grid-content header">
-                                        <strong>Game Filters</strong>
-                                    </div>
-                                </div>
-                                <div className="modal-grid-item">
-                                    <div className="modal-grid-content one">
-                                        <strong>Snap %</strong>
-                                    </div>
-                                    <div className="modal-grid-content two">
-                                        Min <input
-                                            type={'number'}
-                                            min={'0'}
-                                            max={'100'}
-                                            value={snapPercentageMin}
-                                            onChange={(e) => setSnapPercentageMin(e.target.value)}
-                                        /> %
-                                    </div>
-                                    <div className="modal-grid-content three">
-                                        Max <input
-                                            type={'number'}
-                                            min={'0'}
-                                            max={'100'}
-                                            value={snapPercentageMax}
-                                            onChange={(e) => setSnapPercentageMax(e.target.value)}
-                                        /> %
-                                    </div>
-                                </div>
-                            </div>
-                        </div >
+                        <TrendModal
+                            modalRef={modalRef}
+                        />
                         :
                         null
                 }
@@ -549,7 +445,7 @@ const Players = ({ }) => {
                     &nbsp;<label className="sort">
                         <i
                             className="fa-solid fa-filter fa-beat click"
-                            onClick={async () => dispatch(setState({ modalVisible: { ...players.modalVisible, options: true } }, 'PLAYERS'))}
+                            onClick={async () => dispatch(setState({ modalVisible: { options: true, player: false, player2: false } }, 'PLAYERS'))}
                         >
                         </i>
                     </label>
@@ -561,7 +457,7 @@ const Players = ({ }) => {
                             :
                             <div className="modal"  >
                                 <PlayerModal
-                                    setPlayerModalVisible={(value) => dispatch(setState({ modalVisible: { ...players.modalVisible, player: value } }, 'PLAYERS'))}
+                                    setPlayerModalVisible={(value) => dispatch(setState({ modalVisible: { options: false, player: value, player2: false } }, 'PLAYERS'))}
                                     player={players.modalVisible.player}
                                     getPlayerScore={getPlayerScore}
                                     ref={playerModalRef}

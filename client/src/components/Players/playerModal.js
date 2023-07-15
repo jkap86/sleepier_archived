@@ -1,5 +1,5 @@
 import { avatar } from '../Home/functions/misc';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 
 const PlayerModal = forwardRef(({
     getPlayerScore,
@@ -7,7 +7,15 @@ const PlayerModal = forwardRef(({
     player,
     league
 }, ref) => {
+    useEffect(() => {
+        // Disable scroll when the component mounts
+        document.body.style.overflow = 'hidden';
 
+        // Enable scroll when the component unmounts
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, []);
 
     const player_score = getPlayerScore(player.trend_games, player.scoring_settings)
 
@@ -16,7 +24,7 @@ const PlayerModal = forwardRef(({
 
         <div className="modal-grid" ref={ref}>
             <button className="close" onClick={(e) => {
-
+                e.stopPropagation()
                 setPlayerModalVisible(false)
             }}>X</button>
             <table className="modal">

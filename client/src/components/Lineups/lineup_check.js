@@ -60,15 +60,15 @@ const LineupCheck = ({
                         wins: user_starters_proj > opp_starters_proj ? 1 : 0,
                         losses: user_starters_proj < opp_starters_proj ? 1 : 0,
                         ties: (user_starters_proj + opp_starters_proj > 0 && user_starters_proj === opp_starters_proj) ? 1 : 0,
-                        fpts: user_starters_proj,
-                        fpts_against: opp_starters_proj
+                        fpts: user_starters_proj || 0,
+                        fpts_against: opp_starters_proj || 0
                     },
                     optimal_proj: {
                         wins: user_optimal_proj > opp_optimal_proj ? 1 : 0,
                         losses: user_optimal_proj < opp_optimal_proj ? 1 : 0,
                         ties: (user_optimal_proj + opp_optimal_proj > 0 && user_optimal_proj === opp_optimal_proj) ? 1 : 0,
-                        fpts: user_optimal_proj,
-                        fpts_against: opp_optimal_proj
+                        fpts: user_optimal_proj || 0,
+                        fpts_against: opp_optimal_proj || 0
                     },
                     starters_optimal_proj: {
                         wins: user_starters_proj > opp_optimal_proj ? 1 : 0,
@@ -298,12 +298,15 @@ const LineupCheck = ({
                 wins: acc.wins + projectedRecordDict[cur.league_id][recordType].wins,
                 losses: acc.losses + projectedRecordDict[cur.league_id][recordType].losses,
                 ties: acc.ties + projectedRecordDict[cur.league_id][recordType].ties,
-                fpts: acc.fpts + projectedRecordDict[cur.league_id][recordType].fpts
+                fpts: acc.fpts + projectedRecordDict[cur.league_id][recordType].fpts,
+                fpts_against: acc.fpts_against + projectedRecordDict[cur.league_id][recordType].fpts_against
             }
         }, {
             wins: 0,
             losses: 0,
-            ties: 0
+            ties: 0,
+            fpts: 0,
+            fpts_against: 0
         })
     return <>
         <div className='navbar'>
@@ -321,15 +324,42 @@ const LineupCheck = ({
                 <option>Lineup Check</option>
             </select>
         </div>
+        <h1>
+            Week {stateState.display_week}
+
+        </h1>
         <h2>
-            <select
-                value={recordType}
-                onChange={(e) => setRecordType(e.target.value)}
-            >
-                <option value={'starters_proj'}>Starters Projection</option>
-                <option value={'optimal_proj'}>Optimal Lineup Projection</option>
-            </select>
-            {projectedRecord.wins}-{projectedRecord.losses}
+            <table className="summary">
+                <tbody>
+                    <tr>
+                        <th>Type</th>
+                        <td>
+                            <select
+                                className={'record_type'}
+                                value={recordType}
+                                onChange={(e) => setRecordType(e.target.value)}
+                            >
+                                <option value={'starters_proj'}>Starters Proj</option>
+                                <option value={'optimal_proj'}>Optimal Proj</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Record</th>
+                        <td>{projectedRecord.wins}-{projectedRecord.losses}</td>
+                    </tr>
+                    <tr>
+                        <th>Points For</th>
+                        <td>{projectedRecord.fpts.toLocaleString("en-US", { maximumIntegerDigits: 2 })}</td>
+                    </tr>
+                    <tr>
+                        <th>Points Against</th>
+                        <td>{projectedRecord.fpts_against.toLocaleString("en-US", { maximumIntegerDigits: 2 })}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
         </h2>
         <TableMain
             id={'Lineups'}
