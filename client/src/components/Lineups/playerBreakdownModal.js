@@ -52,6 +52,15 @@ const PlayerBreakdownModal = forwardRef(({
         }
     }, [playerBreakdownModal, playerBreakdownRef])
 
+    const clearCategories = (player_id) => {
+        const keys = Object.keys(projections[player_id].stats || {})
+
+        const edits = Object.fromEntries(keys.map(key => [key, 0]))
+
+
+        setProjectionEdits(edits)
+    }
+
     const stat_categories = useMemo(() => {
         return Array.from(
             new Set(user.leagues
@@ -81,6 +90,8 @@ const PlayerBreakdownModal = forwardRef(({
             })
     }, [user.leagues])
 
+    console.log({ edits: projectionEdits })
+
     return <div className="modal" >
         <div className="modal-grid" ref={playerBreakdownRef}>
             <button className="close" onClick={closeModal}>X</button>
@@ -89,6 +100,7 @@ const PlayerBreakdownModal = forwardRef(({
                     <strong>
                         {avatar(player_id, 'player', 'player')}
                         {allPlayers[player_id]?.full_name}
+
                     </strong>
                 </caption>
                 <thead>
@@ -98,6 +110,9 @@ const PlayerBreakdownModal = forwardRef(({
                         </th>
                         <th>
                             Stats
+                            <i
+                                onClick={() => clearCategories(player_id)}
+                                className="fa-solid fa-eraser click"></i>
                         </th>
                     </tr>
                 </thead>
@@ -113,7 +128,11 @@ const PlayerBreakdownModal = forwardRef(({
                                     <td>
                                         <input
                                             className="editRank"
-                                            defaultValue={projections[player_id].stats[category]}
+                                            value={
+                                                projectionEdits[category] !== undefined
+                                                    ? projectionEdits[category]
+                                                    : projections[player_id].stats[category]
+                                            }
                                             onChange={(e) => setProjectionEdits(prevState => {
                                                 return {
                                                     ...prevState,

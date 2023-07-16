@@ -44,7 +44,7 @@ const Leagues = ({ }) => {
 
 
     const leagues_body = filterLeagues((stateLeagues || []), type1, type2)
-        ?.filter(l => l.userRoster)
+        ?.filter(l => l.userRoster && (!leagues.searched.id || leagues.searched.id === l.league_id))
         ?.map(league => {
             const record = {
                 wins: league.userRoster.settings.wins || 0,

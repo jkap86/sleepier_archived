@@ -178,119 +178,121 @@ const LineupCheck = ({
     ]
 
 
-    const lineups_body = filterLeagues((stateLeagues || []), type1, type2)?.map(league => {
-        const matchups = league[`matchups_${stateState.display_week}`]
+    const lineups_body = filterLeagues((stateLeagues || []), type1, type2)
+        ?.filter(l => !searched.id || searched.id === l.league_id)
+        ?.map(league => {
+            const matchups = league[`matchups_${stateState.display_week}`]
 
-        const matchup = matchups?.find(m => m.roster_id === league.userRoster.roster_id)
-        const opponentMatchup = matchups?.find(m => m.matchup_id === matchup.matchup_id && m.roster_id !== matchup.roster_id)
+            const matchup = matchups?.find(m => m.roster_id === league.userRoster.roster_id)
+            const opponentMatchup = matchups?.find(m => m.matchup_id === matchup.matchup_id && m.roster_id !== matchup.roster_id)
 
-        let opponent;
-        if (opponentMatchup) {
-            const opponentRoster = league.rosters.find(r => r?.roster_id === opponentMatchup?.roster_id)
-            opponent = {
-                roster: opponentRoster,
-                matchup: opponentMatchup
-            }
-
-
-        }
-        let lineups = matchup && getLineupCheck(matchup, league, stateAllPlayers, rankings, projections, stateNflSchedule[stateState.display_week], includeTaxi, includeLocked)
-        const optimal_lineup = lineups?.optimal_lineup
-        const lineup_check = lineups?.lineup_check
-        const starting_slots = lineups?.starting_slots
-        const players_points = { ...lineups?.players_points, ...opponentMatchup?.players_points }
-        const players_projections = { ...lineups?.players_projections, ...opponentMatchup?.players_projections }
-
-        console.log(recordType)
-
-        return {
-            id: league.league_id,
-            search: {
-                text: league.name,
-                image: {
-                    src: league.avatar,
-                    alt: league.name,
-                    type: 'league'
+            let opponent;
+            if (opponentMatchup) {
+                const opponentRoster = league.rosters.find(r => r?.roster_id === opponentMatchup?.roster_id)
+                opponent = {
+                    roster: opponentRoster,
+                    matchup: opponentMatchup
                 }
-            },
-            list: [
-                {
+
+
+            }
+            let lineups = matchup && getLineupCheck(matchup, league, stateAllPlayers, rankings, projections, stateNflSchedule[stateState.display_week], includeTaxi, includeLocked)
+            const optimal_lineup = lineups?.optimal_lineup
+            const lineup_check = lineups?.lineup_check
+            const starting_slots = lineups?.starting_slots
+            const players_points = { ...lineups?.players_points, ...opponentMatchup?.players_points }
+            const players_projections = { ...lineups?.players_projections, ...opponentMatchup?.players_projections }
+
+            console.log(recordType)
+
+            return {
+                id: league.league_id,
+                search: {
                     text: league.name,
-                    colSpan: 6,
-                    className: 'left',
                     image: {
                         src: league.avatar,
                         alt: league.name,
                         type: 'league'
                     }
                 },
-                {
-                    text: projectedRecordDict[league.league_id][recordType].wins ? 'W'
-                        : projectedRecordDict[league.league_id][recordType].losses ? 'L'
-                            : projectedRecordDict[league.league_id][recordType].ties ? 'T'
-                                : '-',
-                    colSpan: 1,
-                    className: projectedRecordDict[league.league_id][recordType].wins ? 'greenb'
-                        : projectedRecordDict[league.league_id][recordType].losses ? 'redb'
-                            : ''
-                },
-                {
-                    text: !matchup?.matchup_id || !lineup_check ? '-' : lineup_check.filter(x => x.notInOptimal).length > 0 ?
-                        lineup_check.filter(x => x.notInOptimal).length :
-                        '√',
-                    colSpan: 2,
-                    className: !matchup?.matchup_id || !lineup_check ? '' : lineup_check.filter(x => x.notInOptimal).length > 0 ?
-                        'red' : 'green'
-                },
-                {
-                    text: !matchup?.matchup_id || !lineup_check ? '-' : lineup_check.filter(x => x.earlyInFlex).length > 0 ?
-                        lineup_check.filter(x => x.earlyInFlex).length :
-                        '√',
-                    colSpan: 2,
-                    className: !matchup?.matchup_id || !lineup_check ? '' : lineup_check.filter(x => x.earlyInFlex).length > 0 ?
-                        'red' : 'green'
-                },
-                {
-                    text: !matchup?.matchup_id || !lineup_check ? '-' : lineup_check.filter(x => x.lateNotInFlex).length > 0 ?
-                        lineup_check.filter(x => x.lateNotInFlex).length :
-                        '√',
-                    colSpan: 2,
-                    className: !matchup?.matchup_id || !lineup_check ? '' : lineup_check.filter(x => x.lateNotInFlex).length > 0 ?
-                        'red' : 'green'
-                },
-                {
-                    text: !matchup?.matchup_id || !lineup_check ? '-' : lineup_check.filter(x => x.nonQBinSF).length > 0 ?
-                        lineup_check.filter(x => x.nonQBinSF).length :
-                        '√',
-                    colSpan: 2,
-                    className: !matchup?.matchup_id || !lineup_check ? '' : lineup_check.filter(x => x.nonQBinSF).length > 0 ?
-                        'red' : 'green'
-                }
+                list: [
+                    {
+                        text: league.name,
+                        colSpan: 6,
+                        className: 'left',
+                        image: {
+                            src: league.avatar,
+                            alt: league.name,
+                            type: 'league'
+                        }
+                    },
+                    {
+                        text: projectedRecordDict[league.league_id][recordType].wins ? 'W'
+                            : projectedRecordDict[league.league_id][recordType].losses ? 'L'
+                                : projectedRecordDict[league.league_id][recordType].ties ? 'T'
+                                    : '-',
+                        colSpan: 1,
+                        className: projectedRecordDict[league.league_id][recordType].wins ? 'greenb'
+                            : projectedRecordDict[league.league_id][recordType].losses ? 'redb'
+                                : ''
+                    },
+                    {
+                        text: !matchup?.matchup_id || !lineup_check ? '-' : lineup_check.filter(x => x.notInOptimal).length > 0 ?
+                            lineup_check.filter(x => x.notInOptimal).length :
+                            '√',
+                        colSpan: 2,
+                        className: !matchup?.matchup_id || !lineup_check ? '' : lineup_check.filter(x => x.notInOptimal).length > 0 ?
+                            'red' : 'green'
+                    },
+                    {
+                        text: !matchup?.matchup_id || !lineup_check ? '-' : lineup_check.filter(x => x.earlyInFlex).length > 0 ?
+                            lineup_check.filter(x => x.earlyInFlex).length :
+                            '√',
+                        colSpan: 2,
+                        className: !matchup?.matchup_id || !lineup_check ? '' : lineup_check.filter(x => x.earlyInFlex).length > 0 ?
+                            'red' : 'green'
+                    },
+                    {
+                        text: !matchup?.matchup_id || !lineup_check ? '-' : lineup_check.filter(x => x.lateNotInFlex).length > 0 ?
+                            lineup_check.filter(x => x.lateNotInFlex).length :
+                            '√',
+                        colSpan: 2,
+                        className: !matchup?.matchup_id || !lineup_check ? '' : lineup_check.filter(x => x.lateNotInFlex).length > 0 ?
+                            'red' : 'green'
+                    },
+                    {
+                        text: !matchup?.matchup_id || !lineup_check ? '-' : lineup_check.filter(x => x.nonQBinSF).length > 0 ?
+                            lineup_check.filter(x => x.nonQBinSF).length :
+                            '√',
+                        colSpan: 2,
+                        className: !matchup?.matchup_id || !lineup_check ? '' : lineup_check.filter(x => x.nonQBinSF).length > 0 ?
+                            'red' : 'green'
+                    }
 
-            ],
-            secondary_table: (
-                <Lineup
-                    matchup={matchup}
-                    opponent={opponent}
-                    starting_slots={starting_slots}
-                    league={league}
-                    optimal_lineup={optimal_lineup}
-                    players_points={players_points}
-                    players_projections={players_projections}
-                    stateAllPlayers={stateAllPlayers}
-                    state_user={state_user}
-                    lineup_check={lineup_check}
-                    syncLeague={syncLeague}
-                    searched={searched}
-                    setSearched={setSearched}
-                    stateState={stateState}
-                    stateNflSchedule={stateNflSchedule}
-                    projectedRecordDict={projectedRecordDict}
-                    recordType={recordType}
-                />
-            )
-        }
-    })
+                ],
+                secondary_table: (
+                    <Lineup
+                        matchup={matchup}
+                        opponent={opponent}
+                        starting_slots={starting_slots}
+                        league={league}
+                        optimal_lineup={optimal_lineup}
+                        players_points={players_points}
+                        players_projections={players_projections}
+                        stateAllPlayers={stateAllPlayers}
+                        state_user={state_user}
+                        lineup_check={lineup_check}
+                        syncLeague={syncLeague}
+                        searched={searched}
+                        setSearched={setSearched}
+                        stateState={stateState}
+                        stateNflSchedule={stateNflSchedule}
+                        projectedRecordDict={projectedRecordDict}
+                        recordType={recordType}
+                    />
+                )
+            }
+        })
 
     const projectedRecord = filterLeagues((stateLeagues || []), type1, type2)
         .reduce((acc, cur) => {

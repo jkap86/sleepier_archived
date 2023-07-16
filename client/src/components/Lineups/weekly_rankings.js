@@ -24,7 +24,17 @@ const WeeklyRankings = ({
     const tooltipRef = useRef(null);
     const { rankings, notMatched, filename, error, playerBreakdownModal } = useSelector(state => state.lineups)
     const playerBreakdownRef = useRef(null);
+    const initialLoadRef = useRef(null);
 
+
+    useEffect(() => {
+
+        if (!initialLoadRef.current) {
+            initialLoadRef.current = true
+        } else {
+            setPage(1)
+        }
+    }, [searched, dispatch])
 
     const weekly_rankings_headers = [
         [
@@ -91,9 +101,11 @@ const WeeklyRankings = ({
 
     const weekly_rankings_body = (rankings && Object.keys(rankings) || Object.keys(projections || {}))
         ?.filter(x => (
-            filterPosition === stateAllPlayers[x]?.position
-            || filterPosition.split('/').includes(stateAllPlayers[x]?.position?.slice(0, 1))
+            !searched?.id || searched.id === x
         ) && (
+                filterPosition === stateAllPlayers[x]?.position
+                || filterPosition.split('/').includes(stateAllPlayers[x]?.position?.slice(0, 1))
+            ) && (
                 filterTeam === 'All' || filterTeam === stateAllPlayers[x]?.team
             )
         )

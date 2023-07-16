@@ -119,7 +119,7 @@ exports.find = async (req, res, home_cache, cache) => {
     }
 
     const leagues_to_send = [...new_leagues, ...updated_leagues, ...leagues_up_to_date]
-        .filter(result => result !== undefined)
+        .filter(league => league !== undefined && league.rosters.find(roster => roster?.players?.length > 0))
         .sort((a, b) => league_ids.indexOf(a.league_id) - league_ids.indexOf(b.league_id))
 
 
