@@ -26,7 +26,7 @@ const WeeklyRankings = ({
     const playerBreakdownRef = useRef(null);
     const initialLoadRef = useRef(null);
 
-
+    console.log({ projections: projections })
     useEffect(() => {
 
         if (!initialLoadRef.current) {
@@ -36,27 +36,32 @@ const WeeklyRankings = ({
         }
     }, [searched, dispatch])
 
+
     const weekly_rankings_headers = [
         [
             {
+                text: '',
+                colSpan: 1
+            },
+            {
                 text: 'Player',
-                colSpan: 3
+                colSpan: 6
             },
             {
                 text: 'Pos',
-                colSpan: 1
+                colSpan: 2
             },
             {
                 text: 'Team',
-                colSpan: 1
+                colSpan: 2
             },
             {
                 text: 'Opp',
-                colSpan: 1
+                colSpan: 2
             },
             {
                 text: 'Kickoff',
-                colSpan: 2
+                colSpan: 4
             },
             {
                 text: edit
@@ -80,7 +85,7 @@ const WeeklyRankings = ({
                         </i>
                         <p>{rankings ? 'Rank' : 'PPR'}</p>
                     </span>,
-                colSpan: 1
+                colSpan: 2
             },
             edit && {
                 text: <span
@@ -94,7 +99,7 @@ const WeeklyRankings = ({
                     </i>
                     <p>Update</p>
                 </span>,
-                colSpan: 2
+                colSpan: 4
             }
         ]
     ]
@@ -110,7 +115,7 @@ const WeeklyRankings = ({
             )
         )
         ?.sort((a, b) => rankings && rankings[a].prevRank - rankings[b].prevRank || projections && projections[b].stats.pts_ppr - projections[a].stats.pts_ppr)
-        ?.map(player_id => {
+        ?.map((player_id, index) => {
             const offset = new Date().getTimezoneOffset()
             const kickoff = stateNflSchedule[stateState.display_week]
                 ?.find(matchup => matchup.team.find(t => matchTeam(t.id) === stateAllPlayers[player_id]?.team))
@@ -129,8 +134,12 @@ const WeeklyRankings = ({
                 },
                 list: [
                     {
+                        text: index + 1,
+                        colSpan: 1
+                    },
+                    {
                         text: stateAllPlayers[player_id]?.full_name,
-                        colSpan: 3,
+                        colSpan: 6,
                         className: 'left',
                         image: {
                             src: player_id,
@@ -140,11 +149,11 @@ const WeeklyRankings = ({
                     },
                     {
                         text: stateAllPlayers[player_id]?.position,
-                        colSpan: 1
+                        colSpan: 2
                     },
                     {
                         text: stateAllPlayers[player_id]?.team || 'FA',
-                        colSpan: 1
+                        colSpan: 2
                     },
                     {
                         text: matchTeam(stateNflSchedule[stateState.display_week]
@@ -153,15 +162,15 @@ const WeeklyRankings = ({
                             ?.find(team => matchTeam(team.id) !== stateAllPlayers[player_id]?.team)
                             ?.id) || 'FA'
                         ,
-                        colSpan: 1
-                    },
-                    {
-                        text: kickoff_formatted?.toLocaleString("en-US", { weekday: 'short', hour: 'numeric', minute: 'numeric', timeZone: timezone }),
                         colSpan: 2
                     },
                     {
+                        text: kickoff_formatted?.toLocaleString("en-US", { weekday: 'short', hour: 'numeric', minute: 'numeric', timeZone: timezone }),
+                        colSpan: 4
+                    },
+                    {
                         text: rankings && rankings[player_id].prevRank || parseFloat(projections[player_id].stats.pts_ppr)?.toFixed(1),
-                        colSpan: 1
+                        colSpan: 2
                     },
                     edit && {
                         text: <input
@@ -176,7 +185,7 @@ const WeeklyRankings = ({
                             }}
                             type={!rankings && "button"}
                         />,
-                        colSpan: 2
+                        colSpan: 4
                     }
                 ]
             }
@@ -216,18 +225,26 @@ const WeeklyRankings = ({
     }
 
     const handleRankSave = () => {
+        if (rankings) {
+            let r = rankings
 
-        let r = rankings || projections
-
-        Object.keys(r || {}).map(player_id => {
-            return r[player_id].prevRank = !parseInt(r[player_id].newRank) ? 999 : r[player_id].newRank
-        })
-        rankings
-            &&
+            Object.keys(r || {}).map(player_id => {
+                return r[player_id].prevRank = !parseInt(r[player_id].newRank) ? 999 : r[player_id].newRank
+            })
             dispatch(uploadRankings({
                 rankings: r
             }))
-            || dispatch(updateSleeperRankings(r))
+        } else {
+            let p = { ...projections }
+
+            Object.keys(p)
+                .filter(player_id => p[player_id].stats.pts_ppr_update && p[player_id].stats.pts_ppr_update !== p[player_id].stats.pts_ppr)
+                .forEach(player_id => {
+                    p[player_id].stats.pts_ppr = p[player_id].stats.pts_ppr_update
+                })
+
+            dispatch(updateSleeperRankings(p))
+        }
         setEdit(false)
 
     }

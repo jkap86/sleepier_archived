@@ -40,6 +40,7 @@ const PlayerBreakdownModal = forwardRef(({
             projections: {
                 ...projections,
                 [player_id]: {
+                    ...projections[player_id],
                     stats: {
                         ...projections[player_id].stats,
                         ...projectionEdits,
@@ -68,6 +69,7 @@ const PlayerBreakdownModal = forwardRef(({
 
         const edits = Object.fromEntries(
             keys
+                .filter(key => !['pts_ppr', 'pts_ppr_update'].includes(key))
                 .map(
                     key => {
                         const key_split = key.split('_');

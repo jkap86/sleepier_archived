@@ -347,8 +347,8 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league) => {
                 };
             }
 
-            const { type, best_ball } = league.data.settings || {}
-            const settings = { type, best_ball }
+            const { type, best_ball, trade_deadline, waiver_day_of_week, daily_waivers_hour } = league.data.settings || {}
+            const settings = { type, best_ball, trade_deadline, waiver_day_of_week, daily_waivers_hour }
 
             const users_w_rosters = users.data
                 ?.filter(user =>
