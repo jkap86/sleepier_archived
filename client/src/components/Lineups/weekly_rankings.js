@@ -165,7 +165,7 @@ const WeeklyRankings = ({
                     },
                     edit && {
                         text: <input
-                            value={rankings && rankings[player_id].newRank || (projections && projections[player_id].stats.pts_ppr_update || projections[player_id].stats.pts_ppr)?.toFixed(1)}
+                            value={rankings && rankings[player_id].newRank || parseFloat(projections && projections[player_id].stats.pts_ppr_update || projections[player_id].stats.pts_ppr)?.toFixed(1)}
                             className={'editRank'}
                             onChange={(e) => rankings && handleRankChange([{ rank: e.target.value, player_id: player_id }])}
                             onClick={(e) => {

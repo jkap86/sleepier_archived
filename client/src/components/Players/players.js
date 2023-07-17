@@ -107,7 +107,7 @@ const Players = ({ }) => {
         ]
     ]
 
-    const getPlayerSharesBody = useCallback((dynastyValues, trendDateStart, trendDateEnd, type1, type2, statType1, statType2) => {
+    const getPlayerSharesBody = useCallback((dynastyValues, trendDateStart, trendDateEnd, type1, type2, statType1, statType2, filteredLeagueCount) => {
         return (playersharesFiltered || [])
             ?.map(player => {
                 let pick_name;
@@ -357,7 +357,7 @@ const Players = ({ }) => {
 
     }, [playersharesFiltered, filterLeagues, stats])
 
-    const playerShares_body = getPlayerSharesBody(dynastyValues, players.trendDateStart, players.trendDateEnd, type1, type2, players.statType1, players.statType2)
+    const playerShares_body = getPlayerSharesBody(dynastyValues, players.trendDateStart, players.trendDateEnd, type1, type2, players.statType1, players.statType2, filteredLeagueCount)
         ?.filter(x =>
             (
                 x.id?.includes('_') || allPlayers[x.id]

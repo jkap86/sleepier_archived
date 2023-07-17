@@ -168,7 +168,6 @@ const PlayerBreakdownModal = forwardRef(({
                                     <th>
                                         Stats
                                         <i
-                                            onClick={() => clearCategories(player_id, 0)}
                                             className="fa-solid fa-eraser click"></i>
                                     </th>
                                 </tr>
