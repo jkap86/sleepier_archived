@@ -25,10 +25,22 @@ const Lineup = ({
     const [itemActive, setItemActive] = useState(null);
     const [syncing, setSyncing] = useState(false)
     const [secondaryContent, setSecondaryContent] = useState('Optimal')
+    const { user } = useSelector(state => state.user);
     const { rankings: uploadedRankings } = useSelector(state => state.lineups)
     const { projections } = useSelector(state => state.main)
 
-    console.log(projectedRecordDict)
+    useEffect(() => {
+        switch (recordType) {
+            case 'starters_proj':
+                setSecondaryContent('Opp-Lineup');
+                break;
+            case 'optimal_proj':
+                setSecondaryContent('Opp-Optimal');
+                break;
+            default:
+                break;
+        }
+    }, [recordType])
 
     const active_player = lineup_check?.find(x => `${x.slot}_${x.index}` === itemActive)?.current_player
 
@@ -42,9 +54,9 @@ const Lineup = ({
         }
     }, [itemActive])
 
-    const handleSync = (league_id, user_id) => {
+    const handleSync = (league_id) => {
         setSyncing(true)
-        dispatch(syncLeague(league_id, user_id))
+        dispatch(syncLeague(league_id, user.user_id, user.username))
         setTimeout(() => {
             setSyncing(false)
         }, 5000)
@@ -130,12 +142,12 @@ const Lineup = ({
                 {
                     text: uploadedRankings
                         ? rankings[slot.current_player]?.prevRank || 999
-                        : players_projections[slot.current_player] || '-',
+                        : players_projections[slot.current_player]?.toFixed(1) || '-',
                     colSpan: 3,
                     className: color
                 },
                 {
-                    text: players_points[slot.current_player]?.toLocaleString("en-US", { minimumFractionDigits: 2 }) || '-',
+                    text: players_points[slot.current_player]?.toFixed(1) || '-',
                     colSpan: 4,
                     className: color
                 }
@@ -210,7 +222,10 @@ const Lineup = ({
             },
 
             ...lineup_check.find(x => x.slot_index === itemActive)?.slot_options
-                ?.sort((a, b) => (rankings[a]?.prevRank || 999) - (rankings[b]?.prevRank || 999))
+                ?.sort(
+                    (a, b) => rankings && (rankings[a]?.prevRank || 999) - (rankings[b]?.prevRank || 999)
+                        || projectedRecordDict[league.league_id].userLineup.players_projections[b] - projectedRecordDict[league.league_id].userLineup.players_projections[a]
+                )
                 ?.map((so, index) => {
                     const color = optimal_lineup.find(x => x.player === so) ? 'green' :
                         stateAllPlayers[so]?.rank_ecr < stateAllPlayers[active_player]?.rank_ecr ? 'yellow' : ''
@@ -233,19 +248,23 @@ const Lineup = ({
                                 }
                             },
                             {
-                                text: '-',
+                                text: matchTeam(stateNflSchedule[stateState.display_week]
+                                    ?.find(matchup => matchup.team.find(t => matchTeam(t.id) === stateAllPlayers[so]?.team))
+                                    ?.team
+                                    ?.find(team => matchTeam(team.id) !== stateAllPlayers[so]?.team)
+                                    ?.id) || 'FA',
                                 colSpan: 3,
                                 className: color
                             },
                             {
                                 text: uploadedRankings
                                     ? rankings[so]?.prevRank || 999
-                                    : getPlayerScore([projections[so]], league.scoring_settings, true) || '-',
+                                    : (projectedRecordDict[league.league_id].userLineup.players_projections[so] || 0).toFixed(1),
                                 colSpan: 3,
                                 className: color
                             },
                             {
-                                text: players_points[so].toLocaleString("en-US", { minimumFractionDigits: 2 }),
+                                text: players_points[so].toFixed(1),
                                 colSpan: 4,
                                 className: color
                             }
@@ -273,17 +292,21 @@ const Lineup = ({
                             }
                         },
                         {
-                            text: '-',
+                            text: matchTeam(stateNflSchedule[stateState.display_week]
+                                ?.find(matchup => matchup.team.find(t => matchTeam(t.id) === stateAllPlayers[opp_starter]?.team))
+                                ?.team
+                                ?.find(team => matchTeam(team.id) !== stateAllPlayers[opp_starter]?.team)
+                                ?.id) || 'FA',
                             colSpan: 3,
                         },
                         {
                             text: uploadedRankings
                                 ? rankings[opp_starter]?.prevRank || 999
-                                : getPlayerScore([projections[opp_starter]], league.scoring_settings, true) || '-',
+                                : (projectedRecordDict[league.league_id].oppLineup.players_projections[opp_starter] || 0).toFixed(1),
                             colSpan: 3
                         },
                         {
-                            text: opponent.matchup.players_points[opp_starter]?.toLocaleString("en-US", { minimumFractionDigits: 2 }) || '-',
+                            text: opponent.matchup.players_points[opp_starter]?.toFixed(1) || '-',
                             colSpan: 4
                         }
                     ]
@@ -309,17 +332,21 @@ const Lineup = ({
                                 }
                             },
                             {
-                                text: '-',
+                                text: matchTeam(stateNflSchedule[stateState.display_week]
+                                    ?.find(matchup => matchup.team.find(t => matchTeam(t.id) === stateAllPlayers[opp_starter.player]?.team))
+                                    ?.team
+                                    ?.find(team => matchTeam(team.id) !== stateAllPlayers[opp_starter.player]?.team)
+                                    ?.id) || 'FA',
                                 colSpan: 3,
                             },
                             {
                                 text: uploadedRankings
                                     ? rankings[opp_starter.player || opp_starter]?.prevRank || 999
-                                    : getPlayerScore([projections[opp_starter.player || opp_starter]], league.scoring_settings, true) || '-',
+                                    : (projectedRecordDict[league.league_id].oppLineup.players_projections[opp_starter.player] || 0).toFixed(1),
                                 colSpan: 3
                             },
                             {
-                                text: opponent.matchup.players_points[opp_starter.player || opp_starter]?.toLocaleString("en-US", { minimumFractionDigits: 2 }) || '-',
+                                text: opponent.matchup.players_points[opp_starter.player || opp_starter].toFixed(1),
                                 colSpan: 4
                             }
                         ]
@@ -345,19 +372,23 @@ const Lineup = ({
                                 }
                             },
                             {
-                                text: '-',
+                                text: matchTeam(stateNflSchedule[stateState.display_week]
+                                    ?.find(matchup => matchup.team.find(t => matchTeam(t.id) === stateAllPlayers[ol.player]?.team))
+                                    ?.team
+                                    ?.find(team => matchTeam(team.id) !== stateAllPlayers[ol.player]?.team)
+                                    ?.id) || 'FA',
                                 colSpan: 3,
                                 className: 'green'
                             },
                             {
                                 text: uploadedRankings
                                     ? rankings[ol.player]?.prevRank || 999
-                                    : getPlayerScore([projections[ol.player]], league.scoring_settings, true) || '-',
+                                    : (projectedRecordDict[league.league_id].userLineup.players_projections[ol.player] || 0).toFixed(1),
                                 colSpan: 3,
                                 className: 'green'
                             },
                             {
-                                text: players_points[ol.player]?.toLocaleString("en-US", { minimumFractionDigits: 2 }),
+                                text: players_points[ol.player].toFixed(1),
                                 colSpan: 4,
                                 className: 'green'
                             }
@@ -375,7 +406,7 @@ const Lineup = ({
             </div>
             <button
                 className={`sync ${syncing ? '' : 'click'}`}
-                onClick={syncing ? null : () => handleSync(league.league_id, league.userRoster.user_id)}
+                onClick={syncing ? null : () => handleSync(league.league_id)}
             >
                 <i className={`fa-solid fa-arrows-rotate ${syncing ? 'rotate' : ''}`}></i>
             </button>

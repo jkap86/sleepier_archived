@@ -149,15 +149,15 @@ export const matchTeam = (team) => {
 }
 
 export const ppr_scoring_settings = {
-    'pass_yd': 0.03999999910593033,
+    'pass_yd': 0.04,
     'pass_td': 4,
     'pass_2pt': 2,
     'pass_int': -1,
-    'rush_yd': 0.10000000149011612,
+    'rush_yd': 0.1,
     'rush_2pt': 2,
     'rush_td': 6,
     'rec': 1,
-    'rec_yd': 0.10000000149011612,
+    'rec_yd': 0.1,
     'rec_2pt': 2,
     'rec_td': 6,
     'fum_lost': -2

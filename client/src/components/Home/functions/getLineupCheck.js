@@ -140,7 +140,7 @@ export const getLineupCheck = (matchup, league, stateAllPlayers, weeklyRankings,
 
             return lineup_check.push({
                 index: index,
-                slot: position_abbrev[slot],
+                slot: position_abbrev[slot] || 'IDP',
                 slot_index: `${position_abbrev[slot]}_${index}`,
                 current_player: (matchup?.starters || [])[index] || '0',
                 notInOptimal: !isInOptimal,

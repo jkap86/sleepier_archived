@@ -401,8 +401,8 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league) => {
     return results;
 }
 
-exports.sync = async (req, res, home_cache) => {
-    console.log({ user_id: req.body.user_id })
+exports.sync = async (req, res, home_cache, user_cache) => {
+
     const state = home_cache.get('state')
 
     const updated_league = await getBatchLeaguesDetails([req.body.league_id], state.display_week, false)
@@ -415,16 +415,16 @@ exports.sync = async (req, res, home_cache) => {
         }
     })
 
-    let leagues_cache;
+    let user_from_cache;
     try {
-        leagues_cache = cache.get(req.body.user_id)
+        user_from_cache = user_cache.get(req.body.username.toLowerCase())
     } catch (error) {
         console.log(error)
     }
 
-    if (leagues_cache) {
+    if (user_from_cache) {
 
-        const updated_leagues = JSON.parse(leagues_cache).map(league => {
+        const updated_leagues = JSON.parse(user_from_cache.leagues).map(league => {
             if (league.league_id === updated_league[0]?.league_id) {
                 return updated_league[0]
             } else {
@@ -433,7 +433,13 @@ exports.sync = async (req, res, home_cache) => {
         })
 
         try {
-            cache.set(req.body.user_id, JSON.stringify(updated_leagues), cache.ttl(req.body.user_id))
+            user_cache.set(
+                req.body.username.toLowerCase(),
+                {
+                    ...user_from_cache,
+                    leagues: JSON.stringify(updated_leagues)
+                },
+                cache.ttl(req.body.username.toLowerCase()))
         } catch (error) {
             console.log(error)
         }

@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = (app, home_cache) => {
+module.exports = (app, home_cache, user_cache) => {
     const leagues = require("../controllers/league.controller.js");
 
     const router = require("express").Router();
@@ -10,7 +10,7 @@ module.exports = (app, home_cache) => {
     });
 
     router.post('/sync', (req, res) => {
-        leagues.sync(req, res, home_cache)
+        leagues.sync(req, res, home_cache, user_cache)
     })
 
     router.post("/draft", async (req, res) => {

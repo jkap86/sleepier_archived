@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { avatar, ppr_scoring_settings } from "../Home/functions/misc";
 import { setState } from "../../actions/actions";
-import { forwardRef, useMemo, useState, useEffect } from "react";
+import { forwardRef, useMemo, useState, useEffect, useRef } from "react";
 import { getPlayerScore } from "../Home/functions/getPlayerScore";
 
 const PlayerBreakdownModal = forwardRef(({
@@ -11,8 +11,10 @@ const PlayerBreakdownModal = forwardRef(({
     const { user } = useSelector(state => state.user);
     const { allPlayers, projections } = useSelector(state => state.main);
     const { playerBreakdownModal } = useSelector(state => state.lineups);
-    const [projectionEdits, setProjectionEdits] = useState({})
-
+    const [projectionEdits, setProjectionEdits] = useState({});
+    const [tab, setTab] = useState('Categories');
+    const [showAllCategories, setShowAllCategories] = useState(false);
+    const projectionPercentageRef = useRef(null);
 
     useEffect(() => {
         // Disable scroll when the component mounts
@@ -24,6 +26,14 @@ const PlayerBreakdownModal = forwardRef(({
         };
     }, []);
 
+    useEffect(() => {
+        setShowAllCategories(false)
+    }, [tab])
+
+    const updatePPRScore = useMemo(() => {
+        return getPlayerScore([{ stats: { ...projections[player_id].stats, ...projectionEdits } }], ppr_scoring_settings, true)
+    }, [projections, projectionEdits])
+
     const closeModal = (e) => {
 
         dispatch(setState({
@@ -33,7 +43,7 @@ const PlayerBreakdownModal = forwardRef(({
                     stats: {
                         ...projections[player_id].stats,
                         ...projectionEdits,
-                        pts_ppr_update: getPlayerScore([{ stats: { ...projections[player_id].stats, ...projectionEdits } }], ppr_scoring_settings, true)
+                        pts_ppr_update: updatePPRScore
                     }
                 }
             }
@@ -52,10 +62,39 @@ const PlayerBreakdownModal = forwardRef(({
         }
     }, [playerBreakdownModal, playerBreakdownRef])
 
-    const clearCategories = (player_id) => {
-        const keys = Object.keys(projections[player_id].stats || {})
+    const clearCategories = (player_id, percentage) => {
+        projectionPercentageRef.current.value = percentage
+        const keys = Object.keys({ ...projectionEdits, ...projections[player_id].stats } || {})
 
-        const edits = Object.fromEntries(keys.map(key => [key, 0]))
+        const edits = Object.fromEntries(
+            keys
+                .map(
+                    key => {
+                        const key_split = key.split('_');
+
+                        const threshold = parseInt(key_split.find(x => parseInt(x)));
+
+                        let new_value;
+
+                        if (key_split.includes('bonus') && threshold) {
+                            const category_to_check = key_split
+                                .filter(x => !['bonus', threshold.toString()].includes(x))
+                                .join('_')
+
+                            console.log({ category_to_check: category_to_check })
+                            if ((projections[player_id].stats[category_to_check] * percentage / 100) >= threshold) {
+                                new_value = 1
+                            } else {
+                                new_value = 0
+                            }
+                        } else {
+                            new_value = (projections[player_id].stats[key] * percentage / 100)?.toFixed(1)
+                        }
+
+                        return [key, new_value]
+                    }
+                )
+        )
 
 
         setProjectionEdits(edits)
@@ -72,7 +111,7 @@ const PlayerBreakdownModal = forwardRef(({
                                 || setting.startsWith('rush')
                                 || setting.startsWith('rec')
                                 || setting.startsWith('bonus')
-                                || setting.startsWith('fum ')
+                                || setting.startsWith('fum')
                             )
                         )
                 )
@@ -90,7 +129,7 @@ const PlayerBreakdownModal = forwardRef(({
             })
     }, [user.leagues])
 
-    console.log({ edits: projectionEdits })
+
 
     return <div className="modal" >
         <div className="modal-grid" ref={playerBreakdownRef}>
@@ -100,51 +139,124 @@ const PlayerBreakdownModal = forwardRef(({
                     <strong>
                         {avatar(player_id, 'player', 'player')}
                         {allPlayers[player_id]?.full_name}
-
+                        &nbsp;
+                        <em className="updated_ppr_score">{updatePPRScore?.toFixed(1)} pts</em>
                     </strong>
+                    <div className="player_breakdown_nav">
+                        <button
+                            className={tab === 'Categories' ? 'active' : 'click'}
+                            onClick={() => setTab('Categories')}
+                        >
+                            Categories
+                        </button>
+                        <button
+                            className={tab === 'Percentage' ? 'active' : 'click'}
+                            onClick={() => setTab('Percentage')}
+                        >
+                            Percentage
+                        </button>
+                    </div>
                 </caption>
-                <thead>
-                    <tr>
-                        <th colSpan={2}>
-                            Scoring Setting
-                        </th>
-                        <th>
-                            Stats
-                            <i
-                                onClick={() => clearCategories(player_id)}
-                                className="fa-solid fa-eraser click"></i>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        stat_categories
-                            .filter(category => projections[player_id].stats[category])
-                            .map(category =>
-                                <tr key={category}>
-                                    <td colSpan={2}>
-                                        {category.replace(/_/g, ' ')}
-                                    </td>
-                                    <td>
-                                        <input
-                                            className="editRank"
-                                            value={
-                                                projectionEdits[category] !== undefined
-                                                    ? projectionEdits[category]
-                                                    : projections[player_id].stats[category]
-                                            }
-                                            onChange={(e) => setProjectionEdits(prevState => {
-                                                return {
-                                                    ...prevState,
-                                                    [category]: parseFloat(e.target.value)
-                                                }
-                                            })}
-                                        />
-                                    </td>
+                {
+                    tab === 'Categories'
+                        ? <>
+                            <thead>
+                                <tr>
+                                    <th colSpan={2}>
+                                        Scoring Setting
+                                    </th>
+                                    <th>
+                                        Stats
+                                        <i
+                                            onClick={() => clearCategories(player_id, 0)}
+                                            className="fa-solid fa-eraser click"></i>
+                                    </th>
                                 </tr>
-                            )
-                    }
-                </tbody>
+                            </thead>
+                            <tbody>
+                                {
+                                    [
+                                        ...stat_categories
+                                            .filter(
+                                                category => Object.keys(projections[player_id].stats)
+                                                    .includes(category)
+                                                    || (projectionEdits[category] && Object.keys(projectionEdits).includes(category))
+
+                                            ),
+                                        ...(
+                                            showAllCategories
+                                            && stat_categories
+                                                .filter(
+                                                    category => !(
+                                                        Object.keys(projections[player_id].stats)
+                                                            .includes(category)
+                                                        || (projectionEdits[category] && Object.keys(projectionEdits).includes(category))
+                                                    )
+                                                )
+                                            || []
+                                        )
+
+                                    ]
+                                        .map(category =>
+                                            <tr key={category}>
+                                                <td colSpan={2}>
+                                                    {category.replace(/_/g, ' ')}
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        type="number"
+                                                        className="editRank"
+
+                                                        value={
+                                                            projectionEdits[category] !== undefined
+                                                                ? projectionEdits[category]
+                                                                : parseFloat(projections[player_id].stats[category])?.toFixed(1)
+                                                        }
+                                                        onChange={(e) => setProjectionEdits(prevState => {
+                                                            return {
+                                                                ...prevState,
+                                                                [category]: e.target.value
+                                                            }
+                                                        })}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        )
+                                }
+                            </tbody>
+                            {
+                                !showAllCategories && <tfoot>
+                                    <tr>
+                                        <td colSpan={3}>
+                                            <button className="show_more click" onClick={() => setShowAllCategories(true)}>
+                                                Show More
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tfoot>}
+                        </>
+                        : <thead>
+                            <tr>
+                                <th colSpan={3}>
+
+                                    <input
+                                        ref={projectionPercentageRef}
+                                        type="number"
+                                        className="projection_percentage"
+                                        defaultValue={''}
+                                        placeholder="% of Projection"
+                                    /> %
+                                    <br />
+                                    <button
+                                        className="calculate"
+                                        onClick={(e) => clearCategories(player_id, projectionPercentageRef.current.value)}
+                                    >
+                                        Calculate
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                }
             </table>
         </div>
     </div>

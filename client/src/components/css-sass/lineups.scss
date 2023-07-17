@@ -87,9 +87,6 @@ input.editRank {
     border: .5rem ridge silver;
     opacity: .75;
     margin: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 i.fa-ban {
@@ -137,4 +134,54 @@ table.summary {
 
 i.fa-eraser {
     float: right;
+}
+
+em.updated_ppr_score {
+    color: var(--te);
+}
+
+div.player_breakdown_nav {
+    display: flex;
+    width: 100%;
+    justify-content: space-evenly;
+    margin-bottom: 3rem;
+
+    button {
+        color: white;
+        font-family: 'Ubuntu Mono', sans-serif;
+        font-size: 3rem;
+        border: .5rem solid transparent;
+        padding: 1rem;
+    }
+
+    button.active {
+        color: var(--color2);
+        border-color: var(--color2);
+    }
+}
+
+button.show_more {
+    color: var(--color2);
+    font-family: 'Ubuntu Mono', sans-serif;
+    font-size: 3rem;
+    border: .5rem solid transparent;
+    padding: 1rem;
+}
+
+input.projection_percentage {
+    width: 25rem;
+    font-size: 3rem;
+    font-weight: 700;
+    background-color: black;
+    filter: contrast(2);
+    color: var(--color2);
+    margin: 1rem auto;
+}
+
+button.calculate {
+    font-family: 'Ubuntu Mono', sans-serif;
+    font-weight: 700;
+    font-size: 3rem;
+    background-color: var(--te);
+    margin: 1rem auto;
 }

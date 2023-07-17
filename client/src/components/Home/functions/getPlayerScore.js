@@ -20,6 +20,6 @@ export const getPlayerScore = (stats_array, scoring_settings, total = false) => 
     })
 
     return total
-        ? Object.keys(total_breakdown).reduce((acc, cur) => acc + total_breakdown[cur].points, 0).toFixed(2)
+        ? Object.keys(total_breakdown).reduce((acc, cur) => acc + total_breakdown[cur].points, 0)
         : total_breakdown;
 }
