@@ -1,3 +1,5 @@
+'use strict'
+
 const workerpool = require('workerpool');
 const axios = require('../api/axiosInstance');
 const fs = require('fs');
@@ -79,21 +81,21 @@ workerpool.worker({
 module.exports = async (home_cache) => {
     const pool = workerpool.pool(__filename);
 
-    if (process.env.DATABASE_URL) {
-        setTimeout(async () => {
-            const month = new Date().getMonth()
-            const state = home_cache.get('state')
-            if (month > 5) {
-                await pool.exec('getProjections', [state.league_season, state.display_week])
-            }
-        }, 5000)
 
-        setInterval(async () => {
-            const month = new Date().getMonth();
-            const state = home_cache.get('state')
-            if (month > 5) {
-                await pool.exec('getProjections', [state.league_season, state.display_week])
-            }
-        }, 15 * 60 * 1000)
-    }
+    setTimeout(async () => {
+        const month = new Date().getMonth()
+        const state = home_cache.get('state')
+        if (month > 5) {
+            await pool.exec('getProjections', [state.league_season, state.display_week])
+        }
+    }, 5000)
+
+    setInterval(async () => {
+        const month = new Date().getMonth();
+        const state = home_cache.get('state')
+        if (month > 5) {
+            await pool.exec('getProjections', [state.league_season, state.display_week])
+        }
+    }, 15 * 60 * 1000)
+
 }
