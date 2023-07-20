@@ -7,7 +7,6 @@ import { getLineupCheck } from "../Home/functions/getLineupCheck";
 import { setState, fetchProjections } from "../../actions/actions";
 
 const Lineups = ({
-    projectedRecordDict
 }) => {
     const dispatch = useDispatch();
     const [tab, setTab] = useState('Lineup Check')
@@ -27,7 +26,7 @@ const Lineups = ({
         <LineupCheck
             tab={tab}
             setTab={setTab}
-            projectedRecordDict={projectedRecordDict}
+
         />
 
     return <>
