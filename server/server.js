@@ -41,6 +41,7 @@ function start() {
     require('./app/routes/dynastyrankings.routes')(app)
     require('./app/routes/trade.routes')(app)
     require('./app/routes/ringOfFire.routes')(app, home_cache)
+    require('./app/routes/projections.routes')(app, home_cache)
 
     app.get('*', async (req, res) => {
         res.sendFile(path.join(__dirname, '../client/build/index.html'));

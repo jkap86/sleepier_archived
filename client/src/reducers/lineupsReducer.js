@@ -5,7 +5,11 @@ const initialState = {
     notMatched: [],
     filename: '',
     error: null,
-    playerBreakdownModal: false
+    playerBreakdownModal: false,
+    includeTaxi: true,
+    includeLocked: true,
+    projectedRecordDictAll: {},
+    week: 1
 }
 
 const lineupsReducer = (state = initialState, action) => {

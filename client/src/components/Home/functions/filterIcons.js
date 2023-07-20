@@ -89,7 +89,7 @@ export const draftClassFilterIcon = (filterDraftClass, setFilterDraftClass, draf
 }
 
 export const includeTaxiIcon = (includeTaxi, setIncludeTaxi) => {
-    return <div className='relative click' onClick={() => setIncludeTaxi(prevState => !prevState)}>
+    return <div className='relative click' onClick={() => setIncludeTaxi(!includeTaxi)}>
         <img
             src={taxi}
             className='thumbnail'
@@ -100,7 +100,7 @@ export const includeTaxiIcon = (includeTaxi, setIncludeTaxi) => {
 }
 
 export const includeLockedIcon = (includeLocked, setIncludeLocked) => {
-    return <div className='relative click' onClick={() => setIncludeLocked(prevState => !prevState)}>
+    return <div className='relative click' onClick={() => setIncludeLocked(!includeLocked)}>
         <img
             src={includeLocked && lock || unlock}
             className='thumbnail'

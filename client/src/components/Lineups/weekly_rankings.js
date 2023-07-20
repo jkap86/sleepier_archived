@@ -22,9 +22,11 @@ const WeeklyRankings = ({
     const [filterPosition, setFilterPosition] = useState('W/R/T/Q')
     const [filterTeam, setFilterTeam] = useState('All')
     const tooltipRef = useRef(null);
-    const { rankings, notMatched, filename, error, playerBreakdownModal } = useSelector(state => state.lineups)
+    const { rankings, notMatched, filename, error, playerBreakdownModal, week } = useSelector(state => state.lineups)
     const playerBreakdownRef = useRef(null);
     const initialLoadRef = useRef(null);
+
+
 
     console.log({ projections: projections })
     useEffect(() => {
@@ -104,7 +106,7 @@ const WeeklyRankings = ({
         ]
     ]
 
-    const weekly_rankings_body = (rankings && Object.keys(rankings) || Object.keys(projections || {}))
+    const weekly_rankings_body = (rankings && Object.keys(rankings) || Object.keys(projections[week] || {}))
         ?.filter(x => (
             !searched?.id || searched.id === x
         ) && (
@@ -114,10 +116,10 @@ const WeeklyRankings = ({
                 filterTeam === 'All' || filterTeam === stateAllPlayers[x]?.team
             )
         )
-        ?.sort((a, b) => rankings && rankings[a].prevRank - rankings[b].prevRank || projections && projections[b].stats.pts_ppr - projections[a].stats.pts_ppr)
+        ?.sort((a, b) => rankings && rankings[a].prevRank - rankings[b].prevRank || projections[week] && projections[week][b].stats.pts_ppr - projections[week][a].stats.pts_ppr)
         ?.map((player_id, index) => {
             const offset = new Date().getTimezoneOffset()
-            const kickoff = stateNflSchedule[stateState.display_week]
+            const kickoff = stateNflSchedule[week]
                 ?.find(matchup => matchup.team.find(t => matchTeam(t.id) === stateAllPlayers[player_id]?.team))
                 ?.kickoff
             const kickoff_formatted = kickoff && new Date(parseInt(kickoff * 1000)) || '-'
@@ -156,7 +158,7 @@ const WeeklyRankings = ({
                         colSpan: 2
                     },
                     {
-                        text: matchTeam(stateNflSchedule[stateState.display_week]
+                        text: matchTeam(stateNflSchedule[week]
                             ?.find(matchup => matchup.team.find(t => matchTeam(t.id) === stateAllPlayers[player_id]?.team))
                             ?.team
                             ?.find(team => matchTeam(team.id) !== stateAllPlayers[player_id]?.team)
@@ -169,12 +171,12 @@ const WeeklyRankings = ({
                         colSpan: 4
                     },
                     {
-                        text: rankings && rankings[player_id].prevRank || parseFloat(projections[player_id].stats.pts_ppr)?.toFixed(1),
+                        text: rankings && rankings[player_id].prevRank || parseFloat(projections[week][player_id].stats.pts_ppr)?.toFixed(1),
                         colSpan: 2
                     },
                     edit && {
                         text: <input
-                            value={rankings && rankings[player_id].newRank || parseFloat(projections && projections[player_id].stats.pts_ppr_update || projections[player_id].stats.pts_ppr)?.toFixed(1)}
+                            value={rankings && rankings[player_id].newRank || parseFloat(projections[week] && projections[week][player_id].stats.pts_ppr_update || projections[week][player_id].stats.pts_ppr)?.toFixed(1)}
                             className={'editRank'}
                             onChange={(e) => rankings && handleRankChange([{ rank: e.target.value, player_id: player_id }])}
                             onClick={(e) => {
@@ -193,7 +195,7 @@ const WeeklyRankings = ({
 
     const handleRankChange = (players_to_update) => {
 
-        let r = rankings || projections
+        let r = rankings || projections[week]
 
         players_to_update.map(player_to_update => {
             const prevRank = parseInt(r[player_to_update.player_id].newRank)
@@ -235,7 +237,7 @@ const WeeklyRankings = ({
                 rankings: r
             }))
         } else {
-            let p = { ...projections }
+            let p = { ...projections[week] }
 
             Object.keys(p)
                 .filter(player_id => p[player_id].stats.pts_ppr_update && p[player_id].stats.pts_ppr_update !== p[player_id].stats.pts_ppr)
@@ -287,25 +289,6 @@ const WeeklyRankings = ({
     const teamFilter = teamFilterIcon(filterTeam, setFilterTeam)
 
     return <>
-        <div className='navbar'>
-            <p className='select click'>
-                {tab}&nbsp;<i class="fa-solid fa-caret-down"></i>
-            </p>
-
-            <select
-                className='trades click'
-                onChange={(e) => setTab(e.target.value)}
-                value={tab}
-
-            >
-                <option>Weekly Rankings</option>
-                <option>Lineup Check</option>
-            </select>
-        </div>
-        <h1>
-            Week {stateState.display_week}
-
-        </h1>
         <h1>
             {
                 filename ?

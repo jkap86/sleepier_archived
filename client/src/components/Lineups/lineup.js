@@ -18,7 +18,6 @@ const Lineup = ({
     players_projections,
     stateState,
     stateNflSchedule,
-    projectedRecordDict,
     recordType
 }) => {
     const dispatch = useDispatch()
@@ -26,8 +25,10 @@ const Lineup = ({
     const [syncing, setSyncing] = useState(false)
     const [secondaryContent, setSecondaryContent] = useState('Optimal')
     const { user } = useSelector(state => state.user);
-    const { rankings: uploadedRankings } = useSelector(state => state.lineups)
-    const { projections } = useSelector(state => state.main)
+    const { rankings: uploadedRankings, week } = useSelector(state => state.lineups)
+    const { projections, projectionDict } = useSelector(state => state.main)
+
+    const projectedRecordDict = projectionDict[week]
 
     useEffect(() => {
         switch (recordType) {
@@ -63,16 +64,16 @@ const Lineup = ({
     }
 
 
-    const user_starters_proj = projectedRecordDict[league.league_id][recordType].fpts.toFixed(2);
-    const user_optimal_proj = projectedRecordDict[league.league_id][recordType].fpts.toFixed(2);
+    const user_starters_proj = projectedRecordDict[league.league_id][league.userRoster.roster_id][recordType].fpts.toFixed(2);
+    const user_optimal_proj = projectedRecordDict[league.league_id][league.userRoster.roster_id][recordType].fpts.toFixed(2);
 
-    const opp_starters_proj = projectedRecordDict[league.league_id][recordType].fpts_against.toFixed(2);
-    const opp_optimal_proj = projectedRecordDict[league.league_id][recordType].fpts_against.toFixed(2);
+    const opp_starters_proj = projectedRecordDict[league.league_id][league.userRoster.roster_id][recordType].fpts_against.toFixed(2);
+    const opp_optimal_proj = projectedRecordDict[league.league_id][league.userRoster.roster_id][recordType].fpts_against.toFixed(2);
 
     const lineup_headers = [
         [
             {
-                text: projectedRecordDict[league.league_id].starters_proj.fpts.toFixed(2),
+                text: projectedRecordDict[league.league_id][league.userRoster.roster_id].starters_proj.fpts.toFixed(2),
                 colSpan: 23,
                 className: 'half'
             }
@@ -160,11 +161,11 @@ const Lineup = ({
             {
                 text: (
                     secondaryContent === 'Optimal'
-                        ? projectedRecordDict[league.league_id].optimal_proj.fpts.toFixed(2)
+                        ? projectedRecordDict[league.league_id][league.userRoster.roster_id].optimal_proj.fpts.toFixed(2)
                         : secondaryContent === 'Opp-Lineup'
-                            ? projectedRecordDict[league.league_id].starters_proj.fpts_against.toFixed(2)
+                            ? projectedRecordDict[league.league_id][league.userRoster.roster_id].starters_proj.fpts_against.toFixed(2)
                             : secondaryContent === 'Opp-Optimal'
-                                ? projectedRecordDict[league.league_id].optimal_proj.fpts_against.toFixed(2)
+                                ? projectedRecordDict[league.league_id][league.userRoster.roster_id].optimal_proj.fpts_against.toFixed(2)
                                 : ''
                 ),
                 colSpan: 23,
@@ -224,7 +225,7 @@ const Lineup = ({
             ...lineup_check.find(x => x.slot_index === itemActive)?.slot_options
                 ?.sort(
                     (a, b) => rankings && (rankings[a]?.prevRank || 999) - (rankings[b]?.prevRank || 999)
-                        || projectedRecordDict[league.league_id].userLineup.players_projections[b] - projectedRecordDict[league.league_id].userLineup.players_projections[a]
+                        || projectedRecordDict[league.league_id][league.userRoster.roster_id].userLineup.players_projections[b] - projectedRecordDict[league.league_id][league.userRoster.roster_id].userLineup.players_projections[a]
                 )
                 ?.map((so, index) => {
                     const color = optimal_lineup.find(x => x.player === so) ? 'green' :
@@ -259,7 +260,7 @@ const Lineup = ({
                             {
                                 text: uploadedRankings
                                     ? rankings[so]?.prevRank || 999
-                                    : (projectedRecordDict[league.league_id].userLineup.players_projections[so] || 0).toFixed(1),
+                                    : (projectedRecordDict[league.league_id][league.userRoster.roster_id].userLineup.players_projections[so] || 0).toFixed(1),
                                 colSpan: 3,
                                 className: color
                             },
@@ -302,7 +303,7 @@ const Lineup = ({
                         {
                             text: uploadedRankings
                                 ? rankings[opp_starter]?.prevRank || 999
-                                : (projectedRecordDict[league.league_id].oppLineup.players_projections[opp_starter] || 0).toFixed(1),
+                                : (projectedRecordDict[league.league_id][league.userRoster.roster_id].oppLineup.players_projections[opp_starter] || 0).toFixed(1),
                             colSpan: 3
                         },
                         {
@@ -313,7 +314,7 @@ const Lineup = ({
                 }
             })
             : secondaryContent === 'Opp-Optimal' ?
-                projectedRecordDict[league.league_id].oppLineup?.optimal_lineup?.map((opp_starter, index) => {
+                projectedRecordDict[league.league_id][league.userRoster.roster_id].oppLineup?.optimal_lineup?.map((opp_starter, index) => {
                     return {
                         id: opp_starter.player || opp_starter,
                         list: [
@@ -342,7 +343,7 @@ const Lineup = ({
                             {
                                 text: uploadedRankings
                                     ? rankings[opp_starter.player || opp_starter]?.prevRank || 999
-                                    : (projectedRecordDict[league.league_id].oppLineup.players_projections[opp_starter.player] || 0).toFixed(1),
+                                    : (projectedRecordDict[league.league_id][league.userRoster.roster_id].oppLineup.players_projections[opp_starter.player] || 0).toFixed(1),
                                 colSpan: 3
                             },
                             {
@@ -383,7 +384,7 @@ const Lineup = ({
                             {
                                 text: uploadedRankings
                                     ? rankings[ol.player]?.prevRank || 999
-                                    : (projectedRecordDict[league.league_id].userLineup.players_projections[ol.player] || 0).toFixed(1),
+                                    : (projectedRecordDict[league.league_id][league.userRoster.roster_id].userLineup.players_projections[ol.player] || 0).toFixed(1),
                                 colSpan: 3,
                                 className: 'green'
                             },

@@ -21,7 +21,7 @@ const statsReducer = (state = initialState, action) => {
                     error: null
                 }
             } else {
-                console.log({ noleague: action.payload.league })
+
                 return {
                     ...state,
                     isLoading: false,

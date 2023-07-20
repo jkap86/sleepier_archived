@@ -3,15 +3,28 @@ const initialState = {
     allPlayers: {},
     nflSchedule: {},
     projections: {},
+    projectionDict: {},
     tab: 'players',
     type1: 'All',
-    type2: 'All'
+    type2: 'All',
+    isLoadingProjections: false
 };
 
 const mainReducer = (state = initialState, action) => {
     switch (action.type) {
         case 'FETCH_MAIN_SUCCESS':
-            const projections = Object.fromEntries(action.payload.projections.map(proj => [proj.player_id, proj]))
+            console.log('Main Reducer')
+            const projections = Object.fromEntries(Object.keys(action.payload.projections)
+                .map(week => {
+                    return [
+                        week,
+                        Object.fromEntries(
+                            action.payload.projections[week]
+                                .map(proj => [proj.player_id, proj])
+                        )
+                    ]
+                })
+            )
 
             return {
                 ...state,

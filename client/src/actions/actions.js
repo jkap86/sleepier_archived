@@ -323,3 +323,26 @@ export const updateSleeperRankings = (updatedRankings) => ({
     type: 'UPDATE_SLEEPER_RANKINGS',
     payload: updatedRankings
 })
+
+export const fetchProjections = (leagues_dict, week, user_id) => async (dispatch) => {
+
+    dispatch({ type: 'FETCH_PROJECTIONS_START', payload: week })
+
+    try {
+        const projections = await axios.post('/league/matchups', {
+            user_id: user_id,
+            leagues_dict: leagues_dict,
+            week: week
+        })
+
+        console.log({ projections: projections.data })
+
+        dispatch({
+            type: 'FETCH_PROJECTIONS_SUCCESS',
+            payload: projections.data
+        })
+    } catch (error) {
+        dispatch({ type: 'FETCH_PROJECTIONS_FAILURE', payload: error.message })
+    }
+
+}

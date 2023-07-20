@@ -1,34 +1,40 @@
-module.exports = async (home_cache) => {
-    const axios = require('../api/axiosInstance');
+const workerpool = require('workerpool');
+const axios = require('../api/axiosInstance');
+const fs = require('fs');
 
-    const getProjections = async (season, week) => {
-        const getPlayerScore = (stats_array, scoring_settings, total = false) => {
+const getProjections = async (season, week) => {
+    console.log('Update Projections...')
 
-            let total_breakdown = {};
+    const getPlayerScore = (stats_array, scoring_settings, total = false) => {
 
-            stats_array?.map(stats_game => {
-                Object.keys(stats_game?.stats || {})
-                    .filter(x => Object.keys(scoring_settings).includes(x))
-                    .map(key => {
-                        if (!total_breakdown[key]) {
-                            total_breakdown[key] = {
-                                stats: 0,
-                                points: 0
-                            }
-                        }
+        let total_breakdown = {};
+
+        stats_array?.map(stats_game => {
+            Object.keys(stats_game?.stats || {})
+                .filter(x => Object.keys(scoring_settings).includes(x))
+                .map(key => {
+                    if (!total_breakdown[key]) {
                         total_breakdown[key] = {
-                            stats: total_breakdown[key].stats + stats_game.stats[key],
-                            points: total_breakdown[key].points + (stats_game.stats[key] * scoring_settings[key])
+                            stats: 0,
+                            points: 0
                         }
-                    })
-            })
+                    }
+                    total_breakdown[key] = {
+                        stats: total_breakdown[key].stats + stats_game.stats[key],
+                        points: total_breakdown[key].points + (stats_game.stats[key] * scoring_settings[key])
+                    }
+                })
+        })
 
-            return total
-                ? Object.keys(total_breakdown).reduce((acc, cur) => acc + total_breakdown[cur].points, 0)
-                : total_breakdown;
-        }
+        return total
+            ? Object.keys(total_breakdown).reduce((acc, cur) => acc + total_breakdown[cur].points, 0)
+            : total_breakdown;
+    }
 
-        const projections = await axios.get(`https://api.sleeper.com/projections/nfl/${season}/${week}?season_type=regular&position[]=QB&position[]=RB&position[]=TE&position[]=WR&order_by=ppr`)
+    const projections = {}
+
+    for (let i = week; i < 19; i++) {
+        const projections_week = await axios.get(`https://api.sleeper.com/projections/nfl/${season}/${i}?season_type=regular&position[]=QB&position[]=RB&position[]=TE&position[]=WR&order_by=ppr`)
 
         const ppr_scoring_settings = {
             'pass_yd': 0.04,
@@ -45,7 +51,7 @@ module.exports = async (home_cache) => {
             'fum_lost': -2
         }
 
-        const projections_totals = projections.data
+        const projections_totals = projections_week.data
             .filter(p => p.stats.pts_ppr)
             .map(p => {
                 const ppr_score = getPlayerScore([p], ppr_scoring_settings, true)
@@ -58,20 +64,36 @@ module.exports = async (home_cache) => {
                 }
             })
 
-        home_cache.set('projections', projections_totals, 0)
+        projections[i] = projections_totals
+
+        console.log(`Projections updated for Week ${i}`)
     }
+    console.log('Projections Update Complete')
+    fs.writeFileSync('./projections.json', JSON.stringify(projections))
+}
 
-    setTimeout(() => {
-        const state = home_cache.get('state')
-        if (state.display_week > 0 && state.display_week < 19) {
-            getProjections(state.league_season, state.display_week)
-        }
-    }, 5000)
+workerpool.worker({
+    getProjections: getProjections
+})
 
-    setInterval(() => {
-        const state = home_cache.get('state')
-        if (state.display_week > 0 && state.display_week < 19) {
-            getProjections(state.league_season, state.display_week)
-        }
-    }, 15 * 60 * 1000)
+module.exports = async (home_cache) => {
+    const pool = workerpool.pool(__filename);
+
+    if (process.env.DATABASE_URL) {
+        setTimeout(async () => {
+            const month = new Date().getMonth()
+            const state = home_cache.get('state')
+            if (month > 5) {
+                await pool.exec('getProjections', [state.league_season, state.display_week])
+            }
+        }, 5000)
+
+        setInterval(async () => {
+            const month = new Date().getMonth();
+            const state = home_cache.get('state')
+            if (month > 5) {
+                await pool.exec('getProjections', [state.league_season, state.display_week])
+            }
+        }, 15 * 60 * 1000)
+    }
 }
