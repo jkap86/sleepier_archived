@@ -50,7 +50,8 @@ const PlayerBreakdownModal = forwardRef(({
                         }
                     }
                 }
-            }
+            },
+            projectionDict: {}
         }, 'MAIN'))
         dispatch(setState({ playerBreakdownModal: false }, 'LINEUPS'))
     }
