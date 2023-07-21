@@ -1,6 +1,6 @@
 'use strict'
 
-const workerpool = require('workerpool');
+//const workerpool = require('workerpool');
 const axios = require('../api/axiosInstance');
 const fs = require('fs');
 
@@ -73,11 +73,11 @@ const getProjections = async (season, week) => {
     console.log('Projections Update Complete')
     fs.writeFileSync('./projections.json', JSON.stringify(projections))
 }
-
+/*
 workerpool.worker({
     getProjections: getProjections
 })
-
+*/
 module.exports = async (home_cache) => {
     const pool = workerpool.pool(__filename);
 
@@ -86,7 +86,7 @@ module.exports = async (home_cache) => {
         const month = new Date().getMonth()
         const state = home_cache.get('state')
         if (month > 5) {
-            await pool.exec('getProjections', [state.league_season, state.display_week])
+            await getProjections(state.league_season, state.display_week)
         }
     }, 5000)
 
@@ -94,7 +94,7 @@ module.exports = async (home_cache) => {
         const month = new Date().getMonth();
         const state = home_cache.get('state')
         if (month > 5) {
-            await pool.exec('getProjections', [state.league_season, state.display_week])
+            await getProjections(state.league_season, state.display_week)
         }
     }, 15 * 60 * 1000)
 
