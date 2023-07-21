@@ -358,9 +358,10 @@ const Players = ({ }) => {
     }, [playersharesFiltered, filterLeagues, stats])
 
     const playerShares_body = getPlayerSharesBody(dynastyValues, players.trendDateStart, players.trendDateEnd, type1, type2, players.statType1, players.statType2, filteredLeagueCount)
-        ?.filter(x =>
+        ?.filter(x => x
+            &&
             (
-                x.id?.includes('_') || allPlayers[x.id]
+                x.id.includes('_') || allPlayers[x.id]
             ) && (
                 !players.searched?.id || players.searched?.id === x.id
             ) && (
