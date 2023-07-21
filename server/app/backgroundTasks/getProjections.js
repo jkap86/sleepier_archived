@@ -2,7 +2,7 @@
 
 const workerpool = require('workerpool');
 const axios = require('../api/axiosInstance');
-//const fs = require('fs');
+const fs = require('fs');
 
 const getProjections = async (season, week) => {
     console.log('Update Projections...')
@@ -71,7 +71,7 @@ const getProjections = async (season, week) => {
         console.log(`Projections updated for Week ${i}`)
     }
     console.log('Projections Update Complete')
-    //   fs.writeFileSync('./projections.json', JSON.stringify(projections))
+    fs.writeFileSync('./projections.json', JSON.stringify(projections))
 }
 
 workerpool.worker({

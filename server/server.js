@@ -53,7 +53,7 @@ function start() {
 
         require('./app/backgroundTasks/onServerBoot')(home_cache)
         require('./app/backgroundTasks/findMostLeagus')(app)
-        require('./app/backgroundTasks/getProjections')(home_cache)
+        // require('./app/backgroundTasks/getProjections')(home_cache)
     });
 
 }
