@@ -73,13 +73,13 @@ const getProjections = async (season, week) => {
     console.log('Projections Update Complete')
     fs.writeFileSync('./projections.json', JSON.stringify(projections))
 }
-/*
+
 workerpool.worker({
     getProjections: getProjections
 })
-*/
+
 module.exports = async (home_cache) => {
-    //const pool = workerpool.pool(__filename);
+    const pool = workerpool.pool(__filename);
 
 
     setTimeout(async () => {
