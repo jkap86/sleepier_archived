@@ -79,7 +79,7 @@ workerpool.worker({
 })
 */
 module.exports = async (home_cache) => {
-    const pool = workerpool.pool(__filename);
+    //const pool = workerpool.pool(__filename);
 
 
     setTimeout(async () => {
