@@ -237,6 +237,10 @@ exports.find = async (req, res, home_cache, cache) => {
 
     const [leagues_to_add, leagues_to_update, leagues_up_to_date] = await getLeaguesToUpsert(user_id, league_ids)
 
+    console.log(leagues_to_add.length + ' new leagues')
+    console.log(leagues_to_update.length + ' to update leagues')
+    console.log(leagues_up_to_date.length + ' up to date leagues')
+
     //  get updated data for leagues_to_add and leagues_to_update
 
     const new_leagues = await getBatchLeaguesDetails(leagues_to_add, state.display_week, true)
@@ -376,8 +380,6 @@ const getLeaguesToUpsert = async (user_id, league_ids) => {
             l_db.updatedAt >= cutoff
         )
 
-
-
     return [leagues_to_add, leagues_to_update, leagues_up_to_date]
 }
 
@@ -470,7 +472,7 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league, sync)
                         .map(async week => {
                             const matchup_prev = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/matchups/${week + 1}`)
 
-                            matchups[`matchups_${week + 1}`] = matchup_prev.data
+                            matchups[`matchups_${week + 1}`] = (league.data.settings.playoff_week_start < 1 || week + 1 < league.data.settings.playoff_week_start) ? matchup_prev.data : []
 
                         }))
 
@@ -485,12 +487,12 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league, sync)
                     if (new_league) {
 
 
-                        await Promise.all(Array.from(Array(Math.max(display_week, 1)).keys())
+                        await Promise.all(Array.from(Array(18).keys())
                             .filter(key => key + 1 !== Math.max(display_week, 1))
                             .map(async week => {
                                 const matchup_prev = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/matchups/${week + 1}`)
 
-                                matchups[`matchups_${week + 1}`] = matchup_prev.data
+                                matchups[`matchups_${week + 1}`] = (league.data.settings.playoff_week_start < 1 || week + 1 < league.data.settings.playoff_week_start) ? matchup_prev.data : []
 
                             }))
                     }
