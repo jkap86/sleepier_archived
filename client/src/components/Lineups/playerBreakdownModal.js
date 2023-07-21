@@ -10,7 +10,7 @@ const PlayerBreakdownModal = forwardRef(({
     const dispatch = useDispatch();
     const { user } = useSelector(state => state.user);
     const { allPlayers, projections } = useSelector(state => state.main);
-    const { playerBreakdownModal } = useSelector(state => state.lineups);
+    const { playerBreakdownModal, week } = useSelector(state => state.lineups);
     const [projectionEdits, setProjectionEdits] = useState({});
     const [tab, setTab] = useState('Categories');
     const [showAllCategories, setShowAllCategories] = useState(false);
@@ -31,7 +31,7 @@ const PlayerBreakdownModal = forwardRef(({
     }, [tab])
 
     const updatePPRScore = useMemo(() => {
-        return getPlayerScore([{ stats: { ...projections[player_id].stats, ...projectionEdits } }], ppr_scoring_settings, true)
+        return getPlayerScore([{ stats: { ...projections[week][player_id].stats, ...projectionEdits } }], ppr_scoring_settings, true)
     }, [projections, projectionEdits])
 
     const closeModal = (e) => {
@@ -39,12 +39,15 @@ const PlayerBreakdownModal = forwardRef(({
         dispatch(setState({
             projections: {
                 ...projections,
-                [player_id]: {
-                    ...projections[player_id],
-                    stats: {
-                        ...projections[player_id].stats,
-                        ...projectionEdits,
-                        pts_ppr_update: updatePPRScore
+                [week]: {
+                    ...projections[week],
+                    [player_id]: {
+                        ...projections[week][player_id],
+                        stats: {
+                            ...projections[week][player_id].stats,
+                            ...projectionEdits,
+                            pts_ppr_update: updatePPRScore
+                        }
                     }
                 }
             }
@@ -65,7 +68,7 @@ const PlayerBreakdownModal = forwardRef(({
 
     const clearCategories = (player_id, percentage) => {
         projectionPercentageRef.current.value = percentage
-        const keys = Object.keys({ ...projectionEdits, ...projections[player_id].stats } || {})
+        const keys = Object.keys({ ...projectionEdits, ...projections[week][player_id].stats } || {})
 
         const edits = Object.fromEntries(
             keys
@@ -84,13 +87,13 @@ const PlayerBreakdownModal = forwardRef(({
                                 .join('_')
 
                             console.log({ category_to_check: category_to_check })
-                            if ((projections[player_id].stats[category_to_check] * percentage / 100) >= threshold) {
+                            if ((projections[week][player_id].stats[category_to_check] * percentage / 100) >= threshold) {
                                 new_value = 1
                             } else {
                                 new_value = 0
                             }
                         } else {
-                            new_value = (projections[player_id].stats[key] * percentage / 100)?.toFixed(1)
+                            new_value = (projections[week][player_id].stats[key] * percentage / 100)?.toFixed(1)
                         }
 
                         return [key, new_value]
@@ -179,7 +182,7 @@ const PlayerBreakdownModal = forwardRef(({
                                     [
                                         ...stat_categories
                                             .filter(
-                                                category => Object.keys(projections[player_id].stats)
+                                                category => Object.keys(projections[week][player_id].stats)
                                                     .includes(category)
                                                     || (projectionEdits[category] && Object.keys(projectionEdits).includes(category))
 
@@ -189,7 +192,7 @@ const PlayerBreakdownModal = forwardRef(({
                                             && stat_categories
                                                 .filter(
                                                     category => !(
-                                                        Object.keys(projections[player_id].stats)
+                                                        Object.keys(projections[week][player_id].stats)
                                                             .includes(category)
                                                         || (projectionEdits[category] && Object.keys(projectionEdits).includes(category))
                                                     )
@@ -211,7 +214,7 @@ const PlayerBreakdownModal = forwardRef(({
                                                         value={
                                                             projectionEdits[category] !== undefined
                                                                 ? projectionEdits[category]
-                                                                : parseFloat(projections[player_id].stats[category])?.toFixed(1)
+                                                                : parseFloat(projections[week][player_id].stats[category])?.toFixed(1)
                                                         }
                                                         onChange={(e) => setProjectionEdits(prevState => {
                                                             return {
