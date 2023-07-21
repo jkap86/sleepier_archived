@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import TableMain from '../Home/tableMain';
 import Trade from './trade';
 import TradeInfo from './tradeInfo';
-import { setState, fetchLmTrades, fetchFilteredLmTrades } from '../../actions/actions';
+import { setState, fetchLmTrades, fetchFilteredLmTrades, fetchValues } from '../../actions/actions';
 import Search from '../Home/search';
 
 const LmTrades = ({
@@ -65,7 +65,17 @@ const LmTrades = ({
     }, [trades.lmTrades.searched_player, trades.lmTrades.searched_manager, dispatch])
 
 
+    useEffect(() => {
+        let page = trades.lmTrades.page;
 
+        const dates = trades.lmTrades.trades.slice((page - 1) * 25, ((page - 1) * 25) + 25).map(trade => new Date(parseInt(trade.status_updated) - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0])
+
+        if (trades) {
+
+            dispatch(fetchValues([...dates, new Date(new Date() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]], null))
+        }
+
+    }, [trades.lmTrades.trades, trades.lmTrades.page])
 
     const managers_list = []
 

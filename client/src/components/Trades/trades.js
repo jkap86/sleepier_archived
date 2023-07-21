@@ -4,7 +4,7 @@ import { loadingIcon, avatar, getTrendColor } from '../Home/functions/misc';
 import TradeInfo from './tradeInfo';
 import Search from '../Home/search';
 import { useSelector, useDispatch } from 'react-redux';
-import { setState, fetchValues } from '../../actions/actions';
+import { setState } from '../../actions/actions';
 import '../css/trades.css';
 import LmTrades from "./lmTrades";
 import PcTrades from "./pcTrades";
