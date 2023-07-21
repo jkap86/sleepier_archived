@@ -25,10 +25,11 @@ const Lineup = ({
     const [syncing, setSyncing] = useState(false)
     const [secondaryContent, setSecondaryContent] = useState('Optimal')
     const { user } = useSelector(state => state.user);
-    const { rankings: uploadedRankings, week } = useSelector(state => state.lineups)
+    const { rankings: uploadedRankings, week, includeTaxi, includeLocked } = useSelector(state => state.lineups)
     const { projections, projectionDict } = useSelector(state => state.main)
 
-    const projectedRecordDict = projectionDict[week]
+    const hash = `${includeTaxi}-${includeLocked}`;
+    const projectedRecordDict = projectionDict[week][hash];
 
     useEffect(() => {
         switch (recordType) {
