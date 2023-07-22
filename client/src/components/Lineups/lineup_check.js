@@ -317,56 +317,67 @@ const LineupCheck = ({
             fpts: 0,
             fpts_against: 0
         })
-    return isLoadingProjectionDict ? loadingIcon : <>
-        <h2>
-            <table className="summary">
-                <tbody>
-                    <tr>
-                        <th>Type</th>
-                        <td>
-                            <select
-                                className={'record_type'}
-                                value={recordType}
-                                onChange={(e) => dispatch(setState({ recordType: e.target.value }, 'LINEUPS'))}
-                            >
-                                <option value={'starters_proj'}>Starters Proj</option>
-                                <option value={'optimal_proj'}>Optimal Proj</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Record</th>
-                        <td>{projectedRecord.wins}-{projectedRecord.losses}</td>
-                    </tr>
-                    <tr>
-                        <th>Points For</th>
-                        <td>{projectedRecord.fpts.toLocaleString("en-US", { maximumIntegerDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                        <th>Points Against</th>
-                        <td>{projectedRecord.fpts_against.toLocaleString("en-US", { maximumIntegerDigits: 2 })}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+    const projectedRecordDict_keys = Object.keys(projectionDict?.[hash] || {}).map(key => parseInt(key));
+
+    return !(projectionDict[hash]?.[week] || week === 'All')
+        ? loadingIcon
+        : <>
+
+            {
+                (isLoadingProjectionDict && week === 'All')
+                    ? <h2><em>{`Weeks ${Math.min(...projectedRecordDict_keys)} - ${Math.max(...projectedRecordDict_keys)} Loaded...`}</em></h2>
+                    : ''
+            }
+            <h2>
+                <table className="summary">
+                    <tbody>
+                        <tr>
+                            <th>Type</th>
+                            <td>
+                                <select
+                                    className={'record_type'}
+                                    value={recordType}
+                                    onChange={(e) => dispatch(setState({ recordType: e.target.value }, 'LINEUPS'))}
+                                >
+                                    <option value={'starters_proj'}>Starters Proj</option>
+                                    <option value={'optimal_proj'}>Optimal Proj</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Record</th>
+                            <td>{projectedRecord.wins}-{projectedRecord.losses}</td>
+                        </tr>
+                        <tr>
+                            <th>Points For</th>
+                            <td>{projectedRecord.fpts.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
+                        </tr>
+                        <tr>
+                            <th>Points Against</th>
+                            <td>{projectedRecord.fpts_against.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
+                        </tr>
+                    </tbody>
+                </table>
 
 
-        </h2>
-        <TableMain
-            id={'Lineups'}
-            type={'primary'}
-            headers={week === 'All' ? season_total_headers : lineups_headers}
-            body={week === 'All' ? season_total_body : lineups_body}
-            page={page}
-            setPage={setPage}
-            itemActive={itemActive}
-            setItemActive={setItemActive}
-            search={true}
-            searched={searched}
-            setSearched={setSearched}
-            options2={[includeLockedIcon(includeLocked, (value) => dispatch(setState({ includeLocked: value }, 'LINEUPS')))]}
-            options1={[includeTaxiIcon(includeTaxi, (value) => dispatch(setState({ includeTaxi: value }, 'LINEUPS')))]}
-        />
-    </>
+            </h2>
+            <TableMain
+                id={'Lineups'}
+                type={'primary'}
+                headers={week === 'All' ? season_total_headers : lineups_headers}
+                body={week === 'All' ? season_total_body : lineups_body}
+                page={page}
+                setPage={setPage}
+                itemActive={itemActive}
+                setItemActive={setItemActive}
+                search={true}
+                searched={searched}
+                setSearched={setSearched}
+                options2={[includeLockedIcon(includeLocked, (value) => dispatch(setState({ includeLocked: value }, 'LINEUPS')))]}
+                options1={[includeTaxiIcon(includeTaxi, (value) => dispatch(setState({ includeTaxi: value }, 'LINEUPS')))]}
+            />
+        </>
 }
 
 export default LineupCheck;

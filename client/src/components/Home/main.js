@@ -20,9 +20,12 @@ const Main = () => {
     const { rankings, includeTaxi, includeLocked, week } = useSelector(state => state.lineups)
     const { isLoadingData } = useSelector(state => state.filteredData);
 
+    const hash = `${includeTaxi}-${includeLocked}`;
 
 
-    console.log({ projectionDict: projectionDict })
+    console.log(Object.keys(projectionDict?.[hash] || {}));
+    console.log(isLoadingProjectionDict)
+
     useEffect(() => {
         const fetchdata = async () => {
             try {
@@ -58,13 +61,16 @@ const Main = () => {
 
     useEffect(() => {
         const worker = new Worker('/getRecordDictWeekWorker.js');
-        const hash = `${includeTaxi}-${includeLocked}`;
 
-        if (user?.user_id) {
+
+        if (user?.user_id && !isLoadingProjectionDict) {
+            console.log('Getting Projection Dict for week ' + week)
+
             dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
+            const w = 'All';
             worker.postMessage({
                 user,
-                week,
+                w,
                 includeTaxi,
                 includeLocked,
                 projections,
@@ -73,20 +79,36 @@ const Main = () => {
                 rankings,
                 projectionDict
             });
+            const result_dict = {};
 
             worker.onmessage = (e) => {
                 console.log({ e: e })
                 const result = e.data;
-                dispatch(setState({
-                    projectionDict: result,
-                    isLoadingProjectionDict: false
-                }, 'MAIN'));
+
+                result_dict[result.week] = result.data
+                dispatch(
+                    setState({
+                        projectionDict: {
+                            ...projectionDict,
+                            [hash]: {
+                                ...projectionDict[hash],
+                                ...result_dict
+                            },
+                            edited: false
+                        }
+                    }, 'MAIN')
+                );
+
+                if (!(result.week < 18)) {
+                    dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
+
+                    return () => worker.terminate();
+                }
             };
-            return () => worker.terminate();
         }
+
     }, [
         user?.leagues,
-        week,
         projections,
         stateAllPlayers,
         stateNflSchedule,
