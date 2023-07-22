@@ -20,8 +20,8 @@ const LineupCheck = ({
     const { user: state_user } = useSelector(state => state.user)
     const { type1, type2, allPlayers: stateAllPlayers, state: stateState, nflSchedule: stateNflSchedule, projectionDict, isLoadingProjectionDict } = useSelector(state => state.main);
     const { filteredData } = useSelector(state => state.filteredData)
-    const { rankings, includeTaxi, includeLocked, week } = useSelector(state => state.lineups)
-    const [recordType, setRecordType] = useState('starters_proj')
+    const { rankings, includeTaxi, includeLocked, week, recordType } = useSelector(state => state.lineups)
+
 
 
 
@@ -85,7 +85,7 @@ const LineupCheck = ({
         ]
     ]
 
-    console.log({ week: week })
+
     const lineups_body = filterLeagues((stateLeagues || []), type1, type2)
         ?.filter(l => !searched.id || searched.id === l.league_id)
         ?.flatMap(league => {
@@ -209,6 +209,90 @@ const LineupCheck = ({
 
         })
 
+    const season_total_headers = [
+        [
+            {
+                text: 'League',
+                colSpan: 7
+            },
+            {
+                text: 'Record',
+                colSpan: 3
+            },
+            {
+                text: 'PF',
+                colSpan: 4
+            },
+            {
+                text: 'PA',
+                colSpan: 4
+            },
+            {
+                text: 'Rank',
+                colSpan: 2
+            }
+        ]]
+
+    const season_total_body = filterLeagues((stateLeagues || []), type1, type2)
+        ?.filter(l => !searched.id || searched.id === l.league_id)
+        ?.flatMap(league => {
+            const getAttribute = (attr, roster_id) => {
+                return Object.keys(projectionDict?.[hash] || {}).reduce((acc, cur) => acc + (projectionDict[hash][cur]?.[league.league_id]?.[roster_id]?.[recordType]?.[attr] || 0), 0)
+            }
+            const wins = getAttribute('wins', league.userRoster.roster_id)
+            const losses = getAttribute('losses', league.userRoster.roster_id)
+            const ties = getAttribute('ties', league.userRoster.roster_id)
+            const fpts = getAttribute('fpts', league.userRoster.roster_id)
+            const fpts_against = getAttribute('fpts_against', league.userRoster.roster_id)
+
+
+            const rank = Object.keys(projectionDict[hash]?.['1']?.[league.league_id] || {})
+                .sort((a, b) => getAttribute('wins', b) - getAttribute('wins', a))
+                .indexOf(league.userRoster.roster_id.toString())
+
+
+            return {
+                id: league.league_id,
+                search: {
+                    text: league.name,
+                    image: {
+                        src: league.avatar,
+                        alt: league.name,
+                        type: 'league'
+                    }
+                },
+                list: [
+                    {
+                        text: league.name,
+                        colSpan: 7,
+                        className: 'left',
+                        image: {
+                            src: league.avatar,
+                            alt: league.name,
+                            type: 'league'
+                        }
+                    },
+                    {
+                        text: wins + '-' + losses + (ties > 0 ? `-${ties}` : ''),
+                        colSpan: 3
+                    },
+                    {
+                        text: fpts.toLocaleString('en-US', { maximumFractionDigits: 1, minimumFractionDigits: 1 }),
+                        colSpan: 4
+                    },
+                    {
+                        text: fpts_against.toLocaleString('en-US', { maximumFractionDigits: 1, minimumFractionDigits: 1 }),
+                        colSpan: 4
+                    },
+                    {
+                        text: rank + 1,
+                        colSpan: 2
+                    }
+                ]
+            }
+
+        })
+
     const projectedRecord = filterLeagues((stateLeagues || []), type1, type2)
         .reduce((acc, cur) => {
             return {
@@ -235,7 +319,7 @@ const LineupCheck = ({
                             <select
                                 className={'record_type'}
                                 value={recordType}
-                                onChange={(e) => setRecordType(e.target.value)}
+                                onChange={(e) => dispatch(setState({ recordType: e.target.value }, 'LINEUPS'))}
                             >
                                 <option value={'starters_proj'}>Starters Proj</option>
                                 <option value={'optimal_proj'}>Optimal Proj</option>
@@ -262,8 +346,8 @@ const LineupCheck = ({
         <TableMain
             id={'Lineups'}
             type={'primary'}
-            headers={lineups_headers}
-            body={lineups_body}
+            headers={week === 'All' ? season_total_headers : lineups_headers}
+            body={week === 'All' ? season_total_body : lineups_body}
             page={page}
             setPage={setPage}
             itemActive={itemActive}

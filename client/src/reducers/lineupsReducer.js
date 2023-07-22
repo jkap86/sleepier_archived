@@ -9,7 +9,8 @@ const initialState = {
     includeTaxi: true,
     includeLocked: true,
     projectedRecordDictAll: {},
-    week: 1
+    week: 1,
+    recordType: 'starters_proj'
 }
 
 const lineupsReducer = (state = initialState, action) => {
