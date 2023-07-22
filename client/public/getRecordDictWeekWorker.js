@@ -324,7 +324,7 @@ self.onmessage = (e) => {
 
         Object.keys(projections)
             .forEach(week => {
-                const projectedRecordWeek = projectionDict?.[hash]?.[week] || getRecordDictWeek(week)
+                const projectedRecordWeek = !projectionDict.edited && projectionDict?.[hash]?.[week] || getRecordDictWeek(week)
                 projectedRecordAll[week] = projectedRecordWeek;
             })
 
@@ -336,7 +336,7 @@ self.onmessage = (e) => {
         }
     } else {
 
-        const projectedRecordWeek = projectionDict?.[hash]?.[week] || getRecordDictWeek(week)
+        const projectedRecordWeek = !projectionDict.edited && projectionDict?.[hash]?.[week] || getRecordDictWeek(week)
 
         result = {
             ...projectionDict,
