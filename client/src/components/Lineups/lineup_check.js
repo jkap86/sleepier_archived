@@ -7,6 +7,7 @@ import { includeTaxiIcon, includeLockedIcon } from "../Home/functions/filterIcon
 import { filterLeagues } from "../Home/functions/filterLeagues";
 import { setState } from "../../actions/actions";
 import { loadingIcon } from "../Home/functions/misc";
+import Standings from "./standings";
 
 const LineupCheck = ({
     tab,
@@ -247,7 +248,7 @@ const LineupCheck = ({
 
 
             const rank = Object.keys(projectionDict[hash]?.['1']?.[league.league_id] || {})
-                .sort((a, b) => getAttribute('wins', b) - getAttribute('wins', a))
+                .sort((a, b) => getAttribute('wins', b) - getAttribute('wins', a) || getAttribute('fpts', b) - getAttribute('fpts', a))
                 .indexOf(league.userRoster.roster_id.toString())
 
 
@@ -288,7 +289,14 @@ const LineupCheck = ({
                         text: rank + 1,
                         colSpan: 2
                     }
-                ]
+                ],
+                secondary_table: (
+                    <Standings
+                        getAttribute={getAttribute}
+                        league_id={league.league_id}
+                        rosters={league.rosters}
+                    />
+                )
             }
 
         })
