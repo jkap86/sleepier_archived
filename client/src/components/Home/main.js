@@ -60,10 +60,12 @@ const Main = () => {
 
 
     useEffect(() => {
-        const worker = new Worker('/getRecordDictWeekWorker.js');
+
 
 
         if (user?.user_id && !isLoadingProjectionDict) {
+            const worker = new Worker('/getRecordDictWeekWorker.js');
+
             console.log('Getting Projection Dict for week ' + week)
 
             dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));

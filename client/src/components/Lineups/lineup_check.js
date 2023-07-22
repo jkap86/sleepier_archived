@@ -374,8 +374,8 @@ const LineupCheck = ({
                 search={true}
                 searched={searched}
                 setSearched={setSearched}
-                options2={[includeLockedIcon(includeLocked, (value) => dispatch(setState({ includeLocked: value }, 'LINEUPS')))]}
-                options1={[includeTaxiIcon(includeTaxi, (value) => dispatch(setState({ includeTaxi: value }, 'LINEUPS')))]}
+                options2={[includeLockedIcon(includeLocked, isLoadingProjectionDict ? console.log : (value) => dispatch(setState({ includeLocked: value }, 'LINEUPS')))]}
+                options1={[includeTaxiIcon(includeTaxi, isLoadingProjectionDict ? console.log : (value) => dispatch(setState({ includeTaxi: value }, 'LINEUPS')))]}
             />
         </>
 }
