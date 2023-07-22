@@ -60,10 +60,11 @@ const Main = () => {
         const worker = new Worker('/getRecordDictWeekWorker.js');
         const hash = `${includeTaxi}-${includeLocked}`;
 
-        if (user?.user_id && !projectionDict[hash]) {
+        if (user?.user_id) {
             dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
             worker.postMessage({
                 user,
+                week,
                 includeTaxi,
                 includeLocked,
                 projections,
@@ -77,10 +78,7 @@ const Main = () => {
                 console.log({ e: e })
                 const result = e.data;
                 dispatch(setState({
-                    projectionDict: {
-                        ...projectionDict,
-                        [hash]: result
-                    },
+                    projectionDict: result,
                     isLoadingProjectionDict: false
                 }, 'MAIN'));
             };
@@ -88,6 +86,7 @@ const Main = () => {
         }
     }, [
         user?.leagues,
+        week,
         projections,
         stateAllPlayers,
         stateNflSchedule,

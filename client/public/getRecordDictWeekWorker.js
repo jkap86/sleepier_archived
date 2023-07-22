@@ -1,7 +1,7 @@
 
 self.onmessage = (e) => {
 
-    const { user, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict } = e.data;
+    const { user, week, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict } = e.data;
 
     const matchTeam = (team) => {
         const team_abbrev = {
@@ -315,21 +315,38 @@ self.onmessage = (e) => {
         return projectedRecordWeek
     }
 
+    const hash = `${includeTaxi}-${includeLocked}`;
 
+    let result;
 
-    const projectedRecordAll = {}
+    if (week === 'All') {
+        const projectedRecordAll = {}
 
-    Object.keys(projections)
-        .forEach(week => {
-            const projectedRecordWeek = getRecordDictWeek(week)
-            projectedRecordAll[week] = projectedRecordWeek;
-        })
+        Object.keys(projections)
+            .forEach(week => {
+                const projectedRecordWeek = projectionDict?.[hash]?.[week] || getRecordDictWeek(week)
+                projectedRecordAll[week] = projectedRecordWeek;
+            })
 
-    const result = {
-        ...projectedRecordAll,
-        edited: false
+        result = {
+            ...projectionDict,
+            [hash]: projectedRecordAll,
+            edited: false
+
+        }
+    } else {
+
+        const projectedRecordWeek = projectionDict?.[hash]?.[week] || getRecordDictWeek(week)
+
+        result = {
+            ...projectionDict,
+            [hash]: {
+                ...projectionDict[hash],
+                [week]: projectedRecordWeek
+            },
+            edited: false
+        }
     }
-
 
 
     console.log(result)
