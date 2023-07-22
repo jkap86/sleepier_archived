@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import React, { useEffect, useCallback, useMemo } from "react";
 import { loadingIcon } from "./functions/misc";
 import { useDispatch, useSelector } from "react-redux";
-import { resetState, fetchUser, fetchFilteredData, fetchLmTrades, fetchProjections, setState } from "../../actions/actions";
+import { resetState, fetchUser, fetchFilteredData, fetchLmTrades, syncLeague, setState } from "../../actions/actions";
 import Heading from "./heading";
 import '../css/main.css';
 import Players from "../Players/players";
@@ -17,7 +17,7 @@ const Main = () => {
     const dispatch = useDispatch();
     const { isLoadingUser, errorUser, user } = useSelector((state) => state.user);
     const { tab, state, projections, allPlayers: stateAllPlayers, nflSchedule: stateNflSchedule, projectionDict, isLoadingProjectionDict } = useSelector(state => state.main);
-    const { rankings, includeTaxi, includeLocked, week } = useSelector(state => state.lineups)
+    const { rankings, includeTaxi, includeLocked, week, syncing } = useSelector(state => state.lineups)
     const { isLoadingData } = useSelector(state => state.filteredData);
 
     const hash = `${includeTaxi}-${includeLocked}`;
@@ -40,6 +40,7 @@ const Main = () => {
         fetchdata()
     }, [params.username])
 
+
     const handleFetchFilteredData = useCallback((tab) => {
         dispatch(fetchFilteredData(user.leagues, tab, state.league_season));
     }, [dispatch, user, state])
@@ -58,12 +59,21 @@ const Main = () => {
         }
     }, [user, dispatch])
 
+    useEffect(() => {
+        const leagues_to_sync = user?.leagues?.filter(league => league.settings.status === 'in_season' && Object.keys(league).find(key => key.startsWith('matchups_') && !league[key] && parseInt(key.split('_')[1]) < league.settings.playoff_week_start))
+
+        if (leagues_to_sync?.length > 0) {
+            console.log(`${leagues_to_sync?.length} leagues left to sync...`)
+            dispatch(syncLeague(leagues_to_sync[0].league_id, user.user_id, user.username))
+
+            console.log(leagues_to_sync[0].league_id + ' synced')
+        }
+    }, [user, dispatch])
 
     useEffect(() => {
+        const leagues_to_sync = user?.leagues?.filter(league => league.settings.status === 'in_season' && Object.keys(league).find(key => key.startsWith('matchups_') && !league[key] && parseInt(key.split('_')[1]) < league.settings.playoff_week_start))
 
-
-
-        if (user?.user_id && !isLoadingProjectionDict) {
+        if (user?.user_id && !(leagues_to_sync?.length > 0) && !isLoadingProjectionDict && !projectionDict[hash]) {
             const worker = new Worker('/getRecordDictWeekWorker.js');
 
             console.log('Getting Projection Dict for week ' + week)
@@ -117,6 +127,7 @@ const Main = () => {
         rankings,
         includeTaxi,
         includeLocked,
+        projectionDict,
         dispatch
     ])
 

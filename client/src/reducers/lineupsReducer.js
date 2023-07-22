@@ -10,7 +10,8 @@ const initialState = {
     includeLocked: true,
     projectedRecordDictAll: {},
     week: 1,
-    recordType: 'starters_proj'
+    recordType: 'starters_proj',
+    syncing: false
 }
 
 const lineupsReducer = (state = initialState, action) => {
