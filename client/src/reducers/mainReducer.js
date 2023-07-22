@@ -7,7 +7,7 @@ const initialState = {
     tab: 'players',
     type1: 'All',
     type2: 'All',
-    isLoadingProjections: false
+    isLoadingProjectionDict: false
 };
 
 const mainReducer = (state = initialState, action) => {

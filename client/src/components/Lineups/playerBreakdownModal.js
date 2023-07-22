@@ -9,7 +9,7 @@ const PlayerBreakdownModal = forwardRef(({
 }, playerBreakdownRef) => {
     const dispatch = useDispatch();
     const { user } = useSelector(state => state.user);
-    const { allPlayers, projections } = useSelector(state => state.main);
+    const { allPlayers, projections, projectionDict } = useSelector(state => state.main);
     const { playerBreakdownModal, week } = useSelector(state => state.lineups);
     const [projectionEdits, setProjectionEdits] = useState({});
     const [tab, setTab] = useState('Categories');
@@ -51,7 +51,11 @@ const PlayerBreakdownModal = forwardRef(({
                     }
                 }
             },
-            projectionDict: {}
+            projectionDict: {
+                ...projectionDict,
+                edited: true
+
+            }
         }, 'MAIN'))
         dispatch(setState({ playerBreakdownModal: false }, 'LINEUPS'))
     }

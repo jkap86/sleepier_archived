@@ -55,6 +55,7 @@ const Lineups = ({
                         <option key={key + 1}>{key + 1}</option>
                     )
                 }
+                <option>All</option>
             </select>
 
         </h1>

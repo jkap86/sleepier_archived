@@ -115,7 +115,7 @@ const Lineup = ({
             id: slot.slot_index,
             list: !matchup ? [] : [
                 {
-                    text: lineup_check.find(x => x.current_player === slot.current_player)?.slot,
+                    text: lineup_check?.find(x => x.current_player === slot.current_player)?.slot,
                     colSpan: 3,
                     className: color
                 },
@@ -206,21 +206,21 @@ const Lineup = ({
                 id: 'warning',
                 list: [
                     {
-                        text: lineup_check.find(x => x.slot_index === itemActive)?.current_player === '0' ? 'Empty Slot' :
-                            lineup_check.find(x => x.slot_index === itemActive)?.notInOptimal ? 'Move Out Of Lineup' :
-                                lineup_check.find(x => x.slot_index === itemActive)?.earlyInFlex ? 'Move Out Of Flex' :
-                                    lineup_check.find(x => x.slot_index === itemActive)?.lateNotInFlex ? 'Move Into Flex'
+                        text: lineup_check?.find(x => x.slot_index === itemActive)?.current_player === '0' ? 'Empty Slot' :
+                            lineup_check?.find(x => x.slot_index === itemActive)?.notInOptimal ? 'Move Out Of Lineup' :
+                                lineup_check?.find(x => x.slot_index === itemActive)?.earlyInFlex ? 'Move Out Of Flex' :
+                                    lineup_check?.find(x => x.slot_index === itemActive)?.lateNotInFlex ? 'Move Into Flex'
                                         : '√',
                         colSpan: 23,
-                        className: lineup_check.find(x => x.slot_index === itemActive)?.notInOptimal ? 'red'
-                            : lineup_check.find(x => x.slot_index === itemActive)?.earlyInFlex || lineup_check.find(x => x.slot_index === itemActive)?.lateNotInFlex ? 'yellow'
+                        className: lineup_check?.find(x => x.slot_index === itemActive)?.notInOptimal ? 'red'
+                            : lineup_check?.find(x => x.slot_index === itemActive)?.earlyInFlex || lineup_check?.find(x => x.slot_index === itemActive)?.lateNotInFlex ? 'yellow'
                                 : 'green'
                     }
                 ]
 
             },
 
-            ...lineup_check.find(x => x.slot_index === itemActive)?.slot_options
+            ...lineup_check?.find(x => x.slot_index === itemActive)?.slot_options
                 ?.sort(
                     (a, b) => rankings && (rankings[a]?.prevRank || 999) - (rankings[b]?.prevRank || 999)
                         || projectedRecordDict[league.league_id]?.[league.userRoster.roster_id].userLineup.players_projections[b] - projectedRecordDict[league.league_id]?.[league.userRoster.roster_id].userLineup.players_projections[a]
