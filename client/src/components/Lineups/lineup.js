@@ -29,7 +29,7 @@ const Lineup = ({
     const { projections, projectionDict } = useSelector(state => state.main)
 
     const hash = `${includeTaxi}-${includeLocked}`;
-    const projectedRecordDict = projectionDict[week]?.[hash] || {};
+    const projectedRecordDict = projectionDict[hash]?.[week] || {};
 
     useEffect(() => {
         switch (recordType) {

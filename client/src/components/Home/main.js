@@ -73,7 +73,7 @@ const Main = () => {
     useEffect(() => {
         const leagues_to_sync = user?.leagues?.filter(league => league.settings.status === 'in_season' && Object.keys(league).find(key => key.startsWith('matchups_') && !league[key] && parseInt(key.split('_')[1]) < league.settings.playoff_week_start))
 
-        if (user?.user_id && !(leagues_to_sync?.length > 0) && !isLoadingProjectionDict && !projectionDict[hash]) {
+        if (user?.user_id && !(leagues_to_sync?.length > 0) && (!projectionDict[hash])) {
             const worker = new Worker('/getRecordDictWeekWorker.js');
 
             console.log('Getting Projection Dict for week ' + week)
