@@ -206,10 +206,7 @@ exports.find = async (req, res, home_cache, cache) => {
 
     let leagues = await axios.get(`https://api.sleeper.app/v1/user/${user_id}/leagues/nfl/${state.league_season}`)
 
-    const league_ids = []
-    leagues.data.map((league, index) => {
-        return league_ids[index] = league.league_id
-    })
+
 
     try {
         const deleted = await sequelize.model('userLeagues').destroy({
@@ -220,7 +217,7 @@ exports.find = async (req, res, home_cache, cache) => {
                     },
                     {
                         leagueLeagueId: {
-                            [Op.not]: league_ids
+                            [Op.not]: leagues.data.map(league => league.league_id)
                         }
                     }
                 ]
@@ -235,7 +232,7 @@ exports.find = async (req, res, home_cache, cache) => {
         console.log(error)
     }
 
-    const [leagues_to_add, leagues_to_update, leagues_up_to_date] = await getLeaguesToUpsert(user_id, league_ids)
+    const [leagues_to_add, leagues_to_update, leagues_up_to_date] = await getLeaguesToUpsert(user_id, leagues.data)
 
     console.log(leagues_to_add.length + ' new leagues')
     console.log(leagues_to_update.length + ' to update leagues')
@@ -254,8 +251,8 @@ exports.find = async (req, res, home_cache, cache) => {
         const keys = ["name", "avatar", "settings", "scoring_settings", "roster_positions",
             "rosters", "drafts", "updatedAt"]
 
-        let keys_update = [];
-        let keys_new = [];
+        let keys_update = [...keys];
+        let keys_new = [...keys];
 
         if (state.display_week >= 0 && state.display_week < 19) {
             keys_update.push(`matchups_${Math.max(1, state.display_week)}`)
@@ -315,7 +312,7 @@ exports.find = async (req, res, home_cache, cache) => {
 
     const leagues_to_send = [...new_leagues, ...updated_leagues, ...leagues_up_to_date]
         .filter(league => league !== undefined && league.rosters.find(roster => roster?.players?.length > 0))
-        .sort((a, b) => league_ids.indexOf(a.league_id) - league_ids.indexOf(b.league_id))
+        .sort((a, b) => leagues.data.findIndex(x => x.league_id === a.league_id) - leagues.data.findIndex(x => x.league_id === b.league_id))
 
 
     try {
@@ -341,7 +338,7 @@ exports.find = async (req, res, home_cache, cache) => {
 }
 
 
-const getLeaguesToUpsert = async (user_id, league_ids) => {
+const getLeaguesToUpsert = async (user_id, leagues) => {
 
     // find existing user leagues in db
 
@@ -364,15 +361,14 @@ const getLeaguesToUpsert = async (user_id, league_ids) => {
 
     const cutoff = new Date(new Date() - (24 * 60 * 60 * 1000))
 
-    const leagues_to_add = league_ids
+    const leagues_to_add = leagues
         .filter(l =>
-            !leagues_user_db?.find(l_db => l_db.league_id === l)
+            !leagues_user_db?.find(l_db => l_db.league_id === l.league_id)
         )
 
-    const leagues_to_update = league_ids
-        .filter(l =>
-            leagues_user_db?.find(l_db => l_db.league_id === l)
-            && leagues_user_db?.find(l_db => l_db.league_id === l).updatedAt < cutoff
+    const leagues_to_update = leagues_user_db
+        .filter(l_db =>
+            l_db.updatedAt < cutoff
         )
 
     const leagues_up_to_date = leagues_user_db
@@ -383,8 +379,8 @@ const getLeaguesToUpsert = async (user_id, league_ids) => {
     return [leagues_to_add, leagues_to_update, leagues_up_to_date]
 }
 
-const getBatchLeaguesDetails = async (leagueIds, display_week, new_league, sync) => {
-    const getLeagueDetails = async (league_id, display_week, new_league, sync) => {
+const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) => {
+    const getLeagueDetails = async (league_db, display_week, new_league, sync) => {
         const getDraftPicks = (traded_picks, rosters, users, drafts, league) => {
             let draft_season;
             if (drafts.find(x => x.status !== 'complete' && x.settings.rounds === league.settings.draft_rounds)) {
@@ -455,22 +451,27 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league, sync)
         }
 
         try {
-            const league = await axios.get(`https://api.sleeper.app/v1/league/${league_id}`)
-            const users = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/users`)
-            const rosters = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/rosters`)
-            const drafts = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/drafts`)
-            const traded_picks = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/traded_picks`)
+            const league = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}`)
+            const users = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/users`)
+            const rosters = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/rosters`)
+            const drafts = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/drafts`)
+            const traded_picks = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/traded_picks`)
 
 
 
             //  update current week matchup for existing leagues, get all season matchups through current weekk for new leagues
 
-            let matchups = {};
+            let matchups = Object.fromEntries(
+                Object.keys(league_db)
+                    .filter(key => key.startsWith('matchups_'))
+                    .map(key => [key, league_db[key]])
+            )
+            console.log(Object.keys(league_db))
             if (sync) {
                 try {
                     await Promise.all(Array.from(Array(18).keys())
                         .map(async week => {
-                            const matchup_prev = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/matchups/${week + 1}`)
+                            const matchup_prev = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/matchups/${week + 1}`)
 
                             matchups[`matchups_${week + 1}`] = (league.data.settings.playoff_week_start < 1 || week + 1 < league.data.settings.playoff_week_start) ? matchup_prev.data : []
 
@@ -481,7 +482,7 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league, sync)
                 }
             } else if (league.data.status === 'in_season') {
                 try {
-                    const matchup_week = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/matchups/${Math.max(display_week, 1)}`)
+                    const matchup_week = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/matchups/${Math.max(display_week, 1)}`)
                     matchups[`matchups_${Math.max(display_week, 1)}`] = matchup_week.data
 
                     if (new_league) {
@@ -490,7 +491,7 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league, sync)
                         await Promise.all(Array.from(Array(18).keys())
                             .filter(key => key + 1 !== Math.max(display_week, 1))
                             .map(async week => {
-                                const matchup_prev = await axios.get(`https://api.sleeper.app/v1/league/${league_id}/matchups/${week + 1}`)
+                                const matchup_prev = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/matchups/${week + 1}`)
 
                                 matchups[`matchups_${week + 1}`] = (league.data.settings.playoff_week_start < 1 || week + 1 < league.data.settings.playoff_week_start) ? matchup_prev.data : []
 
@@ -588,7 +589,7 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league, sync)
 
 
             return {
-                league_id: league_id,
+                league_id: league_db.league_id,
                 name: league.data.name,
                 avatar: league.data.avatar,
                 season: league.data.season,
@@ -613,10 +614,10 @@ const getBatchLeaguesDetails = async (leagueIds, display_week, new_league, sync)
 
     const chunkSize = 50;
 
-    for (let i = 0; i < leagueIds.length; i += chunkSize) {
-        const chunk = leagueIds.slice(i, i + chunkSize);
-        const chunkResults = await Promise.all(chunk.map(async (leagueId) => {
-            const result = await getLeagueDetails(leagueId, display_week, new_league, sync);
+    for (let i = 0; i < leagues.length; i += chunkSize) {
+        const chunk = leagues.slice(i, i + chunkSize);
+        const chunkResults = await Promise.all(chunk.map(async (league) => {
+            const result = await getLeagueDetails(league.dataValues, display_week, new_league, sync);
             return result !== null ? result : undefined;
         }));
         allResults.push(...chunkResults);
