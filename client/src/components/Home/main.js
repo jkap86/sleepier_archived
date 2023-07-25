@@ -15,7 +15,7 @@ import Lineups from "../Lineups/lineups";
 const Main = () => {
     const params = useParams();
     const dispatch = useDispatch();
-    const { isLoadingUser, errorUser, user } = useSelector((state) => state.user);
+    const { isLoadingUser, errorUser, user, leagues } = useSelector((state) => state.user);
     const { tab, state, projections, allPlayers: stateAllPlayers, nflSchedule: stateNflSchedule, projectionDict, isLoadingProjectionDict } = useSelector(state => state.main);
     const { rankings, includeTaxi, includeLocked, week, syncing } = useSelector(state => state.lineups)
     const { isLoadingData } = useSelector(state => state.filteredData);
@@ -42,8 +42,8 @@ const Main = () => {
 
 
     const handleFetchFilteredData = useCallback((tab) => {
-        dispatch(fetchFilteredData(user.leagues, tab, state.league_season));
-    }, [dispatch, user, state])
+        dispatch(fetchFilteredData(leagues, tab, state.league_season));
+    }, [dispatch, leagues, state])
 
     useEffect(() => {
         if (user.user_id) {
@@ -54,10 +54,10 @@ const Main = () => {
 
 
     useEffect(() => {
-        if (user.user_id) {
-            dispatch(fetchLmTrades(user.user_id, user.leagues, state.league_season, 0, 125))
+        if (user.user_id && leagues.length > 0) {
+            dispatch(fetchLmTrades(user.user_id, leagues, state.league_season, 0, 125))
         }
-    }, [user, dispatch])
+    }, [user, leagues, dispatch])
 
 
     useEffect(() => {
@@ -72,6 +72,7 @@ const Main = () => {
             const w = 'All';
             worker.postMessage({
                 user,
+                leagues,
                 w,
                 includeTaxi,
                 includeLocked,
@@ -116,6 +117,7 @@ const Main = () => {
             const w = 'Sync';
             worker.postMessage({
                 user,
+                leagues,
                 w,
                 includeTaxi,
                 includeLocked,
@@ -136,6 +138,7 @@ const Main = () => {
                     ...result_dict[result.week],
                     ...result.data
                 }
+
                 dispatch(
                     setState({
                         projectionDict: {
@@ -154,7 +157,8 @@ const Main = () => {
         }
 
     }, [
-        user?.leagues,
+        user,
+        leagues,
         projections,
         stateAllPlayers,
         stateNflSchedule,

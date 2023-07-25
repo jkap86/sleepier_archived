@@ -3,6 +3,7 @@
 const initialState = {
     isLoadingUser: false,
     user: {},
+    leagues: [],
     errorUser: null,
     syncing: false,
     errorSyncing: null
@@ -32,10 +33,9 @@ const userReducer = (state = initialState, action) => {
             return {
                 ...state,
                 isLoadingUser: false,
-                user: {
-                    ...action.payload,
-                    leagues: leagues
-                },
+                user: action.payload,
+                leagues: leagues
+
 
             };
         case 'FETCH_USER_FAILURE':
@@ -44,7 +44,7 @@ const userReducer = (state = initialState, action) => {
             return { ...state, errorSyncing: null };
         case 'SYNC_LEAGUES_SUCCESS':
             console.log(action.payload.league_id)
-            const updated_leagues = state.user.leagues.map(l => {
+            const updated_leagues = state.leagues.map(l => {
                 if (l.league_id === action.payload.league_id) {
                     return {
                         ...l,
@@ -55,10 +55,9 @@ const userReducer = (state = initialState, action) => {
             })
             return {
                 ...state,
-                user: {
-                    ...state.user,
-                    leagues: updated_leagues
-                },
+
+                leagues: updated_leagues,
+
                 syncing: false
             }
         case 'SYNC_LEAGUES_FAILURE':

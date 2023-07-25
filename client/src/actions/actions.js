@@ -203,7 +203,7 @@ export const syncLeague = (league_id, user_id, username, week) => {
                 username: username,
                 week: week
             })
-
+            console.log({ updated_league: updated_league })
             const userRoster = updated_league.data.rosters
                 ?.find(r => r.user_id === user_id || r.co_owners?.find(co => co?.user_id === user_id))
 

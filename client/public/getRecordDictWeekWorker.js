@@ -1,7 +1,7 @@
 
 self.onmessage = (e) => {
 
-    const { user, w, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict, syncing } = e.data;
+    const { user, leagues, w, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict, syncing } = e.data;
     console.log({ SYNCING: syncing })
     const matchTeam = (team) => {
         const team_abbrev = {
@@ -213,7 +213,7 @@ self.onmessage = (e) => {
 
         let projectedRecordWeek = {};
 
-        (user?.leagues || [])
+        (leagues || [])
             .filter(league => !syncing || (league.league_id === syncing))
             .forEach(league => {
 

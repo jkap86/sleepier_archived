@@ -630,7 +630,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
 
 
 exports.sync = async (req, res, home_cache, user_cache) => {
-
+    console.log(req.body)
     const state = home_cache.get('state')
 
     const updated_league = await getBatchLeaguesDetails([{ league_id: req.body.league_id }], state.display_week, false, req.body.week)
