@@ -66,9 +66,6 @@ const Main = () => {
 
         if (user?.user_id && (
             (week !== 'All' && (!projectionDict[hash]?.[week] || projections[week]?.edited))
-            || (
-                week === 'All' && Object.keys(projectionDict[hash])?.length < 18
-            )
         ) && !isLoadingProjectionDict) {
             dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
 
@@ -168,6 +165,52 @@ const Main = () => {
                 }
             };
             */
+        } else if (week === 'All' && Object.keys(projectionDict[hash])?.length < 18 && !isLoadingProjectionDict) {
+            const worker = new Worker('/getRecordDictWeekWorker.js');
+
+            console.log('Getting Projection Dict for week ' + week)
+
+            dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
+            const weeks = Object.keys(projections)
+                .filter(key => !Object.keys(projectionDict[hash] || {}).includes(key));
+            worker.postMessage({
+                user,
+                leagues,
+                weeks,
+                includeTaxi,
+                includeLocked,
+                projections,
+                stateAllPlayers,
+                stateNflSchedule,
+                rankings,
+                projectionDict
+            });
+            const result_dict = {};
+
+            worker.onmessage = (e) => {
+                console.log({ e: e })
+                const result = e.data;
+
+                result_dict[result.week] = result.data
+                dispatch(
+                    setState({
+                        projectionDict: {
+                            ...projectionDict,
+                            [hash]: {
+                                ...projectionDict[hash],
+                                ...result_dict
+                            },
+                            edited: false
+                        }
+                    }, 'MAIN')
+                );
+
+                if (!(result.week < 18)) {
+                    dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
+
+                    return () => worker.terminate();
+                }
+            };
         } else if (syncing?.week && !isLoadingProjectionDict) {
             dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
 

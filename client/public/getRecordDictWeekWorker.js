@@ -1,7 +1,7 @@
 
 self.onmessage = (e) => {
 
-    const { user, leagues, w, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict, syncing } = e.data;
+    const { user, leagues, weeks, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict, syncing } = e.data;
     console.log({ SYNCING: syncing })
     const matchTeam = (team) => {
         const team_abbrev = {
@@ -318,38 +318,15 @@ self.onmessage = (e) => {
         return projectedRecordWeek
     }
 
-    const hash = `${includeTaxi}-${includeLocked}`;
+    weeks
+        .forEach(week => {
+            const projectedRecordWeek = getRecordDictWeek(week)
 
-    let result;
-
-    if (w === 'All') {
-        const projectedRecordAll = {}
-
-        Object.keys(projections)
-            .forEach(week => {
-                const projectedRecordWeek = (!projectionDict.edited && projectionDict?.[hash]?.[week]) || getRecordDictWeek(week)
-
-                postMessage({
-                    week: week,
-                    data: projectedRecordWeek
-                })
+            postMessage({
+                week: week,
+                data: projectedRecordWeek
             })
-
-    } else if (syncing) {
-
-        const projectedRecordWeek = getRecordDictWeek(syncing.week, syncing.league_id)
-
-        postMessage({
-            week: syncing.week,
-            data: projectedRecordWeek
         })
-    } else {
-        const projectedRecordWeek = getRecordDictWeek(w)
 
 
-        postMessage({
-            week: w,
-            data: projectedRecordWeek
-        });
-    }
 };
