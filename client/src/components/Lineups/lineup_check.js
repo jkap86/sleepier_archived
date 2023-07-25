@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { includeTaxiIcon, includeLockedIcon } from "../Home/functions/filterIcons";
 import { filterLeagues } from "../Home/functions/filterLeagues";
 import { setState } from "../../actions/actions";
-import { loadingIcon } from "../Home/functions/misc";
+import { loadingIcon, getTrendColor } from "../Home/functions/misc";
 import Standings from "./standings";
 
 const LineupCheck = ({
@@ -19,7 +19,7 @@ const LineupCheck = ({
     const [page, setPage] = useState(1)
     const [searched, setSearched] = useState('')
     const { user: state_user } = useSelector(state => state.user)
-    const { type1, type2, allPlayers: stateAllPlayers, state: stateState, nflSchedule: stateNflSchedule, projectionDict, isLoadingProjectionDict } = useSelector(state => state.main);
+    const { type1, type2, allPlayers: stateAllPlayers, state: stateState, nflSchedule: stateNflSchedule, projectionDict, isLoadingProjectionDict, projections } = useSelector(state => state.main);
     const { filteredData } = useSelector(state => state.filteredData)
     const { rankings, includeTaxi, includeLocked, week, recordType } = useSelector(state => state.lineups)
 
@@ -139,7 +139,12 @@ const LineupCheck = ({
                         }
                     },
                     {
-                        text: rank + 1 > 0 ? rank + 1 : '-',
+                        text: <p
+                            className={matchup?.matchup_id > 0 ? ((rank + 1) / league.rosters.length) < .5 ? ' green stat' : ((rank + 1) / league.rosters.length) > .5 ? ' red stat' : 'stat' : 'stat'}
+                            style={matchup?.matchup_id ? getTrendColor(-(((rank + 1) / league.rosters.length) - .5), .0025) : null}
+                        >
+                            {matchup?.matchup_id ? rank + 1 : '-'}
+                        </p>,
                         colSpan: 1
                     },
                     {
@@ -286,7 +291,12 @@ const LineupCheck = ({
                         colSpan: 4
                     },
                     {
-                        text: rank + 1,
+                        text: <p
+                            className={wins + losses + ties > 0 ? ((rank + 1) / league.rosters.length) < .5 ? ' green stat' : ((rank + 1) / league.rosters.length) > .5 ? ' red stat' : 'stat' : 'stat'}
+                            style={wins + losses + ties > 0 ? getTrendColor(-(((rank + 1) / league.rosters.length) - .5), .0025) : null}
+                        >
+                            {wins + losses + ties > 0 ? rank + 1 : '-'}
+                        </p>,
                         colSpan: 2
                     }
                 ],
@@ -318,7 +328,7 @@ const LineupCheck = ({
             fpts_against: 0
         })
 
-    const projectedRecordDict_keys = Object.keys(projectionDict?.[hash] || {}).map(key => parseInt(key));
+    const loadingWeeks = Object.keys(projections).filter(key => parseInt(key) && !Object.keys(projectionDict[hash])?.includes(key));
 
     return !(projectionDict[hash]?.[week] || week === 'All')
         ? loadingIcon
@@ -326,7 +336,7 @@ const LineupCheck = ({
 
             {
                 (isLoadingProjectionDict && week === 'All')
-                    ? <h2><em>{`Weeks ${Math.min(...projectedRecordDict_keys)} - ${Math.max(...projectedRecordDict_keys)} Loaded...`}</em></h2>
+                    ? <h2><em>{`Loading Weeks ${loadingWeeks} ...`}</em></h2>
                     : ''
             }
             <h2>

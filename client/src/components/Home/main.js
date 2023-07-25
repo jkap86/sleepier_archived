@@ -72,55 +72,56 @@ const Main = () => {
         ) && !isLoadingProjectionDict) {
             dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
 
-            const w = week;
+            setTimeout(() => {
+                const w = week;
 
-            const result = getRecordDict(
-                user,
-                leagues,
-                w,
-                includeTaxi,
-                includeLocked,
-                projections,
-                stateAllPlayers,
-                stateNflSchedule,
-                rankings,
-                projectionDict,
-                syncing
-            )
-            if (w === 'All') {
-                dispatch(
-                    setState({
-                        projectionDict: {
-                            ...projectionDict,
-                            [hash]: {
-                                ...projectionDict[hash],
-                                ...result
+                const result = getRecordDict(
+                    user,
+                    leagues,
+                    w,
+                    includeTaxi,
+                    includeLocked,
+                    projections,
+                    stateAllPlayers,
+                    stateNflSchedule,
+                    rankings,
+                    projectionDict,
+                    syncing
+                )
+                if (w === 'All') {
+                    dispatch(
+                        setState({
+                            projectionDict: {
+                                ...projectionDict,
+                                [hash]: {
+                                    ...projectionDict[hash],
+                                    ...result
+                                }
                             }
-                        }
-                    }, 'MAIN')
-                );
-            } else {
-                dispatch(
-                    setState({
-                        projectionDict: {
-                            ...projectionDict,
-                            [hash]: {
-                                ...projectionDict[hash],
-                                [result.week]: result.data
+                        }, 'MAIN')
+                    );
+                } else {
+                    dispatch(
+                        setState({
+                            projectionDict: {
+                                ...projectionDict,
+                                [hash]: {
+                                    ...projectionDict[hash],
+                                    [result.week]: result.data
+                                }
+                            },
+                            projections: {
+                                ...projections,
+                                [week]: {
+                                    ...projections[week],
+                                    edited: false
+                                }
                             }
-                        },
-                        projections: {
-                            ...projections,
-                            [week]: {
-                                ...projections[week],
-                                edited: false
-                            }
-                        }
-                    }, 'MAIN')
-                );
-            }
-            dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
-
+                        }, 'MAIN')
+                    );
+                }
+                dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
+            }, 500)
             /*
             const worker = new Worker('/getRecordDictWeekWorker.js');
 
