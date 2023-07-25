@@ -1,8 +1,19 @@
 
-self.onmessage = (e) => {
+export const getRecordDict = (
+    user,
+    leagues,
+    w,
+    includeTaxi,
+    includeLocked,
+    projections,
+    stateAllPlayers,
+    stateNflSchedule,
+    rankings,
+    projectionDict,
+    syncing
+) => {
 
-    const { user, leagues, w, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict, syncing } = e.data;
-    console.log({ SYNCING: syncing })
+
     const matchTeam = (team) => {
         const team_abbrev = {
             SFO: 'SF',
@@ -43,7 +54,7 @@ self.onmessage = (e) => {
             : total_breakdown;
     }
 
-    const getLineupCheck = (matchup, league, stateAllPlayers, weeklyRankings, projections, schedule, includeTaxi, includeLocked, user) => {
+    const getLineupCheck = (matchup, league, stateAllPlayers, weeklyRankings, projections, schedule, includeTaxi, includeLocked) => {
 
         const position_map = {
             'QB': ['QB'],
@@ -198,7 +209,7 @@ self.onmessage = (e) => {
             return lineup_check
         }
 
-        const lineup_check = (matchup && user) ? findSuboptimal() : []
+        const lineup_check = (matchup && user.user_id === roster.user_id) ? findSuboptimal() : []
 
         return {
             players_points: matchup.players_points,
@@ -225,7 +236,7 @@ self.onmessage = (e) => {
                         const matchup = matchups?.find(m => m.roster_id === roster.roster_id)
                         const opponentMatchup = matchups?.find(m => m.matchup_id === matchup.matchup_id && m.roster_id !== matchup.roster_id)
 
-                        const userLineup = matchup && getLineupCheck(matchup, league, stateAllPlayers, rankings, projections[week], stateNflSchedule[week], includeTaxi, includeLocked, roster.roster_id === roster.userRoster?.roster_id ? true : false)
+                        const userLineup = matchup && getLineupCheck(matchup, league, stateAllPlayers, rankings, projections[week], stateNflSchedule[week], includeTaxi, includeLocked)
                         const oppLineup = opponentMatchup && getLineupCheck(opponentMatchup, league, stateAllPlayers, rankings, projections[week], stateNflSchedule[week], includeTaxi, includeLocked)
 
                         const user_starters_actual = matchup?.starters?.reduce((acc, cur) => acc + (matchup.players_points[cur] || 0), 0)
@@ -326,30 +337,30 @@ self.onmessage = (e) => {
         const projectedRecordAll = {}
 
         Object.keys(projections)
+            .filter(key => !Object.keys(projectionDict[hash] || {}).includes(key))
             .forEach(week => {
                 const projectedRecordWeek = (!projectionDict.edited && projectionDict?.[hash]?.[week]) || getRecordDictWeek(week)
 
-                postMessage({
-                    week: week,
-                    data: projectedRecordWeek
-                })
+                projectedRecordAll[week] = projectedRecordWeek
             })
+        return projectedRecordAll
 
     } else if (syncing) {
 
         const projectedRecordWeek = getRecordDictWeek(syncing.week, syncing.league_id)
 
-        postMessage({
+        return {
             week: syncing.week,
             data: projectedRecordWeek
-        })
+        };
     } else {
         const projectedRecordWeek = getRecordDictWeek(w)
 
 
-        postMessage({
+        return {
             week: w,
             data: projectedRecordWeek
-        });
+        };
     }
-};
+
+}

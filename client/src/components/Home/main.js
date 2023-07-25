@@ -10,6 +10,7 @@ import Trades from '../Trades/trades';
 import Leagues from "../Leagues/leagues";
 import Leaguemates from "../Leaguemates/leaguemates";
 import Lineups from "../Lineups/lineups";
+import { getRecordDict } from "./functions/getRecordDict";
 
 
 const Main = () => {
@@ -63,7 +64,64 @@ const Main = () => {
     useEffect(() => {
 
 
-        if (user?.user_id && (!projectionDict[hash]) && !isLoadingProjectionDict) {
+        if (user?.user_id && (
+            (week !== 'All' && (!projectionDict[hash]?.[week] || projections[week]?.edited))
+            || (
+                week === 'All' && Object.keys(projectionDict[hash])?.length < 18
+            )
+        ) && !isLoadingProjectionDict) {
+            dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
+
+            const w = week;
+
+            const result = getRecordDict(
+                user,
+                leagues,
+                w,
+                includeTaxi,
+                includeLocked,
+                projections,
+                stateAllPlayers,
+                stateNflSchedule,
+                rankings,
+                projectionDict,
+                syncing
+            )
+            if (w === 'All') {
+                dispatch(
+                    setState({
+                        projectionDict: {
+                            ...projectionDict,
+                            [hash]: {
+                                ...projectionDict[hash],
+                                ...result
+                            }
+                        }
+                    }, 'MAIN')
+                );
+            } else {
+                dispatch(
+                    setState({
+                        projectionDict: {
+                            ...projectionDict,
+                            [hash]: {
+                                ...projectionDict[hash],
+                                [result.week]: result.data
+                            }
+                        },
+                        projections: {
+                            ...projections,
+                            [week]: {
+                                ...projections[week],
+                                edited: false
+                            }
+                        }
+                    }, 'MAIN')
+                );
+            }
+            dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
+
+            /*
             const worker = new Worker('/getRecordDictWeekWorker.js');
 
             console.log('Getting Projection Dict for week ' + week)
@@ -108,10 +166,46 @@ const Main = () => {
                     return () => worker.terminate();
                 }
             };
-        } else if (syncing && !isLoadingProjectionDict) {
+            */
+        } else if (syncing?.week && !isLoadingProjectionDict) {
+            dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
+
+            const w = 'Sync';
+
+            const result = getRecordDict(
+                user,
+                leagues,
+                w,
+                includeTaxi,
+                includeLocked,
+                projections,
+                stateAllPlayers,
+                stateNflSchedule,
+                rankings,
+                projectionDict,
+                syncing
+            )
+
+            dispatch(
+                setState({
+                    projectionDict: {
+                        ...projectionDict,
+                        [hash]: {
+                            ...projectionDict[hash],
+                            [result.week]: {
+                                ...projectionDict[hash][result.week],
+                                ...result.data
+                            }
+                        }
+                    }
+                }, 'MAIN')
+            );
+
+            dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
+            dispatch(setState({ syncing: false }, 'LINEUPS'))
+
+            /*
             const worker = new Worker('/getRecordDictWeekWorker.js');
-
-
 
             dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
             const w = 'Sync';
@@ -148,12 +242,58 @@ const Main = () => {
                     }, 'MAIN')
                 );
 
-                if (!(result.week < 18)) {
-                    dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
-                    dispatch(setState({ syncing: false }, 'LINEUPS'))
-                    return () => worker.terminate();
-                }
+
+                dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
+                dispatch(setState({ syncing: false }, 'LINEUPS'))
+                return () => worker.terminate();
+
             }
+            */
+        } else if (projections[week]?.edited && !isLoadingProjectionDict) {
+
+            /*
+            const worker = new Worker('/getRecordDictWeekWorker.js');
+
+            dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
+            const w = week;
+            worker.postMessage({
+                user,
+                leagues,
+                w,
+                includeTaxi,
+                includeLocked,
+                projections,
+                stateAllPlayers,
+                stateNflSchedule,
+                rankings,
+                projectionDict,
+                syncing
+            });
+            let result_dict = projectionDict[hash];
+
+            worker.onmessage = (e) => {
+                console.log({ syncing: syncing })
+                const result = e.data;
+
+                result_dict[result.week] = result.data
+
+
+                dispatch(
+                    setState({
+                        projectionDict: {
+                            ...projectionDict,
+                            [hash]: result_dict
+                        }
+                    }, 'MAIN')
+                );
+
+
+                dispatch(setState({ isLoadingProjectionDict: false, projectionDict: { ...projectionDict, [week]: { ...projectionDict[week], edited: false } } }, 'MAIN'));
+                dispatch(setState({ syncing: false }, 'LINEUPS'))
+                return () => worker.terminate();
+
+            }
+            */
         }
 
     }, [
@@ -166,6 +306,7 @@ const Main = () => {
         includeTaxi,
         includeLocked,
         projectionDict,
+        week,
         dispatch
     ])
 

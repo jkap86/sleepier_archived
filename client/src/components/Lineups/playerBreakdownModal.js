@@ -48,10 +48,10 @@ const PlayerBreakdownModal = forwardRef(({
                             ...projectionEdits,
                             pts_ppr_update: updatePPRScore
                         }
-                    }
+                    },
+                    edited: true
                 }
-            },
-            projectionDict: {}
+            }
         }, 'MAIN'))
         dispatch(setState({ playerBreakdownModal: false }, 'LINEUPS'))
     }

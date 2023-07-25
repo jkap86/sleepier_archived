@@ -240,7 +240,7 @@ const WeeklyRankings = ({
             let p = { ...projections[week] }
 
             Object.keys(p)
-                .filter(player_id => p[player_id].stats.pts_ppr_update && p[player_id].stats.pts_ppr_update !== p[player_id].stats.pts_ppr)
+                .filter(player_id => player_id !== 'edited' && p[player_id].stats.pts_ppr_update && p[player_id].stats.pts_ppr_update !== p[player_id].stats.pts_ppr)
                 .forEach(player_id => {
                     p[player_id].stats.pts_ppr = p[player_id].stats.pts_ppr_update
                 })

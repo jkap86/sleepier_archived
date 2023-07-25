@@ -56,7 +56,7 @@ const Lineup = ({
     }, [itemActive])
 
     const handleSync = (league_id) => {
-        dispatch(setState({ syncing: league_id }, 'LINEUPS'))
+        dispatch(setState({ syncing: { league_id: league_id, week: week } }, 'LINEUPS'))
         dispatch(syncLeague(league_id, user.user_id, user.username, week))
 
 

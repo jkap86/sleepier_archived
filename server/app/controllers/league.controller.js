@@ -654,7 +654,10 @@ exports.sync = async (req, res, home_cache, user_cache) => {
 
         const updated_leagues = JSON.parse(user_from_cache.leagues).map(league => {
             if (league.league_id === updated_league[0]?.league_id) {
-                return updated_league[0]
+                return {
+                    ...league,
+                    ...updated_league[0]
+                }
             } else {
                 return league
             }
