@@ -193,14 +193,15 @@ export const fetchValues = (trendDateStart, trendDateEnd, dates) => async (dispa
     }
 };
 
-export const syncLeague = (league_id, user_id, username) => {
+export const syncLeague = (league_id, user_id, username, week) => {
     return async (dispatch) => {
         dispatch({ type: 'SYNC_LEAGUE_START' })
 
         try {
             const updated_league = await axios.post(`/league/sync`, {
                 league_id: league_id,
-                username: username
+                username: username,
+                week: week
             })
 
             const userRoster = updated_league.data.rosters

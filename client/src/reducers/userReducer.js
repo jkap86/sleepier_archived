@@ -41,12 +41,15 @@ const userReducer = (state = initialState, action) => {
         case 'FETCH_USER_FAILURE':
             return { ...state, isLoadingUser: false, errorUser: action.payload };
         case 'SYNC_LEAGUES_START':
-            return { ...state, syncing: true, errorSyncing: null };
+            return { ...state, errorSyncing: null };
         case 'SYNC_LEAGUES_SUCCESS':
             console.log(action.payload.league_id)
             const updated_leagues = state.user.leagues.map(l => {
                 if (l.league_id === action.payload.league_id) {
-                    return action.payload
+                    return {
+                        ...l,
+                        ...action.payload
+                    }
                 }
                 return l
             })

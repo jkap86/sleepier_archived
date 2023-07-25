@@ -22,10 +22,9 @@ const Lineup = ({
 }) => {
     const dispatch = useDispatch()
     const [itemActive, setItemActive] = useState(null);
-    const [syncing, setSyncing] = useState(false)
     const [secondaryContent, setSecondaryContent] = useState('Optimal')
     const { user } = useSelector(state => state.user);
-    const { rankings: uploadedRankings, week, includeTaxi, includeLocked } = useSelector(state => state.lineups)
+    const { rankings: uploadedRankings, week, includeTaxi, includeLocked, syncing } = useSelector(state => state.lineups)
     const { projections, projectionDict } = useSelector(state => state.main)
 
     const hash = `${includeTaxi}-${includeLocked}`;
@@ -57,14 +56,10 @@ const Lineup = ({
     }, [itemActive])
 
     const handleSync = (league_id) => {
-        setSyncing(true)
-        dispatch(syncLeague(league_id, user.user_id, user.username))
-        dispatch(setState({
-            projectionDict: {}
-        }, 'MAIN'))
-        setTimeout(() => {
-            setSyncing(false)
-        }, 5000)
+        dispatch(setState({ syncing: league_id }, 'LINEUPS'))
+        dispatch(syncLeague(league_id, user.user_id, user.username, week))
+
+
     }
 
 
@@ -404,7 +399,7 @@ const Lineup = ({
                 </button>
             </div>
             <button
-                className={`sync ${syncing ? '' : 'click'}`}
+                className={`sync ${syncing ? 'rotate' : 'click'}`}
                 onClick={syncing ? null : () => handleSync(league.league_id)}
             >
                 <i className={`fa-solid fa-arrows-rotate ${syncing ? 'rotate' : ''}`}></i>

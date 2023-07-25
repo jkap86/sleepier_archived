@@ -354,7 +354,7 @@ const getLeaguesToUpsert = async (user_id, leagues) => {
         console.log(error)
     }
 
-    let leagues_user_db = user.leagues
+    let leagues_user_db = user.leagues.map(league => league.dataValues || league)
 
     //  split leagues into - leagues_to_add: not in db; leagues_to_update: in db but not updated in last 24hrs; 
     //  leagues_up_to_date: in db and updated within 24 hrs
@@ -469,13 +469,12 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
             console.log(Object.keys(league_db))
             if (sync) {
                 try {
-                    await Promise.all(Array.from(Array(18).keys())
-                        .map(async week => {
-                            const matchup_prev = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/matchups/${week + 1}`)
 
-                            matchups[`matchups_${week + 1}`] = (league.data.settings.playoff_week_start < 1 || week + 1 < league.data.settings.playoff_week_start) ? matchup_prev.data : []
+                    const matchup_prev = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/matchups/${sync}`)
 
-                        }))
+                    matchups[`matchups_${sync}`] = (league.data.settings.playoff_week_start < 1 || sync < league.data.settings.playoff_week_start) ? matchup_prev.data : []
+
+
 
                 } catch (error) {
                     console.log(error)
@@ -617,7 +616,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
     for (let i = 0; i < leagues.length; i += chunkSize) {
         const chunk = leagues.slice(i, i + chunkSize);
         const chunkResults = await Promise.all(chunk.map(async (league) => {
-            const result = await getLeagueDetails(league.dataValues, display_week, new_league, sync);
+            const result = await getLeagueDetails(league.dataValues || league, display_week, new_league, sync);
             return result !== null ? result : undefined;
         }));
         allResults.push(...chunkResults);
@@ -634,7 +633,7 @@ exports.sync = async (req, res, home_cache, user_cache) => {
 
     const state = home_cache.get('state')
 
-    const updated_league = await getBatchLeaguesDetails([req.body.league_id], state.display_week, false, true)
+    const updated_league = await getBatchLeaguesDetails([{ league_id: req.body.league_id }], state.display_week, false, req.body.week)
 
     await League.update({
         ...updated_league[0]

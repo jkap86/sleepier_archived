@@ -59,21 +59,11 @@ const Main = () => {
         }
     }, [user, dispatch])
 
-    useEffect(() => {
-        const leagues_to_sync = user?.leagues?.filter(league => league.settings.status === 'in_season' && Object.keys(league).find(key => key.startsWith('matchups_') && !league[key] && parseInt(key.split('_')[1]) < league.settings.playoff_week_start))
-
-        if (leagues_to_sync?.length > 0) {
-            console.log(`${leagues_to_sync?.length} leagues left to sync...`)
-            dispatch(syncLeague(leagues_to_sync[0].league_id, user.user_id, user.username))
-
-            console.log(leagues_to_sync[0].league_id + ' synced')
-        }
-    }, [user, dispatch])
 
     useEffect(() => {
-        const leagues_to_sync = user?.leagues?.filter(league => league.settings.status === 'in_season' && Object.keys(league).find(key => key.startsWith('matchups_') && !league[key] && parseInt(key.split('_')[1]) < league.settings.playoff_week_start))
 
-        if (user?.user_id && !(leagues_to_sync?.length > 0) && (!projectionDict[hash])) {
+
+        if (user?.user_id && (!projectionDict[hash]) && !isLoadingProjectionDict) {
             const worker = new Worker('/getRecordDictWeekWorker.js');
 
             console.log('Getting Projection Dict for week ' + week)
@@ -117,6 +107,50 @@ const Main = () => {
                     return () => worker.terminate();
                 }
             };
+        } else if (syncing && !isLoadingProjectionDict) {
+            const worker = new Worker('/getRecordDictWeekWorker.js');
+
+
+
+            dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
+            const w = 'Sync';
+            worker.postMessage({
+                user,
+                w,
+                includeTaxi,
+                includeLocked,
+                projections,
+                stateAllPlayers,
+                stateNflSchedule,
+                rankings,
+                projectionDict,
+                syncing
+            });
+            let result_dict = projectionDict[hash];
+
+            worker.onmessage = (e) => {
+                console.log({ syncing: syncing })
+                const result = e.data;
+
+                result_dict[result.week] = {
+                    ...result_dict[result.week],
+                    ...result.data
+                }
+                dispatch(
+                    setState({
+                        projectionDict: {
+                            ...projectionDict,
+                            [hash]: result_dict
+                        }
+                    }, 'MAIN')
+                );
+
+                if (!(result.week < 18)) {
+                    dispatch(setState({ isLoadingProjectionDict: false }, 'MAIN'));
+                    dispatch(setState({ syncing: false }, 'LINEUPS'))
+                    return () => worker.terminate();
+                }
+            }
         }
 
     }, [

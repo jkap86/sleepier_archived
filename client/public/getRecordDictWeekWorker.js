@@ -1,8 +1,8 @@
 
 self.onmessage = (e) => {
 
-    const { user, w, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict } = e.data;
-
+    const { user, w, includeTaxi, includeLocked, projections, stateAllPlayers, stateNflSchedule, rankings, projectionDict, syncing } = e.data;
+    console.log({ SYNCING: syncing })
     const matchTeam = (team) => {
         const team_abbrev = {
             SFO: 'SF',
@@ -209,11 +209,14 @@ self.onmessage = (e) => {
         }
     }
 
-    const getRecordDictWeek = (week) => {
+    const getRecordDictWeek = (week, syncing) => {
+
         let projectedRecordWeek = {};
 
         (user?.leagues || [])
+            .filter(league => !syncing || (league.league_id === syncing))
             .forEach(league => {
+
                 projectedRecordWeek[league.league_id] = {};
                 const matchups = league[`matchups_${week}`]
 
@@ -332,6 +335,18 @@ self.onmessage = (e) => {
                 })
             })
 
+    } else if (syncing) {
+        console.log(syncing)
+        Object.keys(projections)
+            .forEach(week => {
+                const projectedRecordWeek = getRecordDictWeek(week, syncing)
+                console.log(projectedRecordWeek)
+                postMessage({
+                    week: week,
+                    data: projectedRecordWeek
+                })
+            })
+
     } else {
         const projectedRecordWeek = getRecordDictWeek(w)
 
@@ -340,6 +355,5 @@ self.onmessage = (e) => {
             week: w,
             data: projectedRecordWeek
         });
-
     }
 };

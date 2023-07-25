@@ -113,7 +113,7 @@ const LineupCheck = ({
             const players_projections = { ...userLineup?.players_projections, ...oppLineup?.players_projections }
 
             const rank = Object.keys(projectionDict[hash]?.[week]?.[league.league_id] || {})
-                .sort((a, b) => projectionDict[hash]?.[week]?.[league.league_id][b][recordType].fpts - projectionDict[hash]?.[week]?.[league.league_id][a][recordType].fpts)
+                .sort((a, b) => projectionDict[hash]?.[week]?.[league.league_id][b][recordType]?.fpts - projectionDict[hash]?.[week]?.[league.league_id][a][recordType]?.fpts)
                 .indexOf(league.userRoster.roster_id.toString())
 
 
