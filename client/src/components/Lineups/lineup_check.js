@@ -328,7 +328,7 @@ const LineupCheck = ({
             fpts_against: 0
         })
 
-    const loadingWeeks = Object.keys(projections).filter(key => parseInt(key) && !Object.keys(projectionDict[hash])?.includes(key));
+    const loadingWeeks = Object.keys(projections).filter(key => parseInt(key) && !Object.keys(projectionDict[hash] || {})?.includes(key));
 
     return !(projectionDict[hash]?.[week] || week === 'All')
         ? loadingIcon

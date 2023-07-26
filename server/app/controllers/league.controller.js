@@ -368,12 +368,24 @@ const getLeaguesToUpsert = async (user_id, leagues) => {
 
     const leagues_to_update = leagues_user_db
         .filter(l_db =>
-            l_db.updatedAt < cutoff || l_db.settings.status === 'drafting'
+            l_db.updatedAt < cutoff || (
+                l_db.settings.status === 'drafting'
+                || (
+                    l_db.settings.status !== 'in_season'
+                    && l_db.createdAt > cutoff
+                )
+            )
         )
 
     const leagues_up_to_date = leagues_user_db
         .filter(l_db =>
-            l_db.updatedAt >= cutoff && !(l_db.settings.status === 'drafting')
+            l_db.updatedAt >= cutoff && !(
+                l_db.settings.status === 'drafting'
+                || (
+                    l_db.settings.status !== 'in_season'
+                    && l_db.createdAt > cutoff
+                )
+            )
         )
 
     return [leagues_to_add, leagues_to_update, leagues_up_to_date]
@@ -466,7 +478,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
                     .filter(key => key.startsWith('matchups_'))
                     .map(key => [key, league_db[key]])
             )
-            console.log(Object.keys(league_db))
+
             if (sync) {
                 try {
 
@@ -630,7 +642,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
 
 
 exports.sync = async (req, res, home_cache, user_cache) => {
-    console.log(req.body)
+
     const state = home_cache.get('state')
 
     const updated_league = await getBatchLeaguesDetails([{ league_id: req.body.league_id }], state.display_week, false, req.body.week)
