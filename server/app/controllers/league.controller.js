@@ -368,12 +368,12 @@ const getLeaguesToUpsert = async (user_id, leagues) => {
 
     const leagues_to_update = leagues_user_db
         .filter(l_db =>
-            l_db.updatedAt < cutoff
+            l_db.updatedAt < cutoff || l_db.settings.status === 'drafting'
         )
 
     const leagues_up_to_date = leagues_user_db
         .filter(l_db =>
-            l_db.updatedAt >= cutoff
+            l_db.updatedAt >= cutoff && !l_db.settings.status === 'drafting'
         )
 
     return [leagues_to_add, leagues_to_update, leagues_up_to_date]
