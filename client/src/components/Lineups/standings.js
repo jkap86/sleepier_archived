@@ -1,11 +1,14 @@
-import TableMain from "../Home/tableMain"
+import TableMain from "../Home/tableMain";
+import TeamMatchups from "./teamMatchups";
 import { useSelector } from 'react-redux';
+import { useState } from "react";
 
 const Standings = ({
     league_id,
     getAttribute,
     rosters
 }) => {
+    const [itemActive, setItemActive] = useState('');
     const { projectionDict } = useSelector(state => state.main);
     const { rankings, includeTaxi, includeLocked, week, recordType } = useSelector(state => state.lineups)
 
@@ -76,7 +79,13 @@ const Standings = ({
                         text: fpts_against.toLocaleString('en-US', { maximumFractionDigits: 1, minimumFractionDigits: 1 }),
                         colSpan: 4
                     }
-                ]
+                ],
+                secondary_table: (
+                    <TeamMatchups
+                        league_id={league_id}
+                        roster_id={roster_id}
+                    />
+                )
             }
         })
 
@@ -85,6 +94,8 @@ const Standings = ({
             type={'secondary'}
             headers={headers}
             body={body}
+            itemActive={itemActive}
+            setItemActive={setItemActive}
         />
     </>
 }

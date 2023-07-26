@@ -205,7 +205,10 @@ self.onmessage = (e) => {
             players_projections: Object.fromEntries(players.map(player => [player.id, parseFloat(player.rank)])),
             starting_slots: starting_slots,
             optimal_lineup: optimal_lineup,
-            lineup_check: lineup_check
+            lineup_check: lineup_check,
+            username: roster.username,
+            user_id: roster.user_id,
+            avatar: roster.avatar
         }
     }
 

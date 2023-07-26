@@ -216,7 +216,10 @@ export const getRecordDict = (
             players_projections: Object.fromEntries(players.map(player => [player.id, parseFloat(player.rank)])),
             starting_slots: starting_slots,
             optimal_lineup: optimal_lineup,
-            lineup_check: lineup_check
+            lineup_check: lineup_check,
+            username: parseInt(roster.user_id) > 0 ? roster.username : 'Orphan',
+            user_id: roster.user_id,
+            avatar: roster.avatar
         }
     }
 
