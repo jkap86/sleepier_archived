@@ -198,7 +198,7 @@ self.onmessage = (e) => {
             return lineup_check
         }
 
-        const lineup_check = (matchup && user) ? findSuboptimal() : []
+        const lineup_check = (matchup && user?.user_id === roster.user_id) ? findSuboptimal() : []
 
         return {
             players_points: matchup.players_points,
@@ -228,7 +228,7 @@ self.onmessage = (e) => {
                         const matchup = matchups?.find(m => m.roster_id === roster.roster_id)
                         const opponentMatchup = matchups?.find(m => m.matchup_id === matchup.matchup_id && m.roster_id !== matchup.roster_id)
 
-                        const userLineup = matchup && getLineupCheck(matchup, league, stateAllPlayers, rankings, projections[week], stateNflSchedule[week], includeTaxi, includeLocked, roster.roster_id === roster.userRoster?.roster_id ? true : false)
+                        const userLineup = matchup && getLineupCheck(matchup, league, stateAllPlayers, rankings, projections[week], stateNflSchedule[week], includeTaxi, includeLocked, user)
                         const oppLineup = opponentMatchup && getLineupCheck(opponentMatchup, league, stateAllPlayers, rankings, projections[week], stateNflSchedule[week], includeTaxi, includeLocked)
 
                         const user_starters_proj = matchup?.starters?.reduce((acc, cur) => acc + (userLineup.players_projections[cur] || 0), 0)
