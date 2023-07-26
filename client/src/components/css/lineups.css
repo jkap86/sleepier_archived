@@ -171,4 +171,12 @@ button.calculate {
   margin: 1rem auto;
 }
 
+.fa-trophy {
+  color: goldenrod;
+  font-size: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
 /*# sourceMappingURL=lineups.css.map */

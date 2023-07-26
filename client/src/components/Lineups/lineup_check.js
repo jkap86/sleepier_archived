@@ -148,10 +148,18 @@ const LineupCheck = ({
                         colSpan: 1
                     },
                     {
-                        text: projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.wins ? 'W'
-                            : projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.losses ? 'L'
-                                : projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.ties ? 'T'
-                                    : '-',
+                        text: <>
+                            {
+                                projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.wins ? 'W'
+                                    : projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.losses ? 'L'
+                                        : projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.ties ? 'T'
+                                            : '-'
+                            }
+                            {
+                                projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.median_wins
+                                && <i className="fa-solid fa-trophy"></i>
+                            }
+                        </>,
                         colSpan: 1,
                         className: projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.wins ? 'greenb'
                             : projectionDict[hash]?.[week]?.[league.league_id]?.[league.userRoster.roster_id]?.[recordType]?.losses ? 'redb'
@@ -245,15 +253,15 @@ const LineupCheck = ({
             const getAttribute = (attr, roster_id) => {
                 return Object.keys(projectionDict?.[hash] || {}).reduce((acc, cur) => acc + (projectionDict[hash][cur]?.[league.league_id]?.[roster_id]?.[recordType]?.[attr] || 0), 0)
             }
-            const wins = getAttribute('wins', league.userRoster.roster_id)
-            const losses = getAttribute('losses', league.userRoster.roster_id)
+            const wins = getAttribute('wins', league.userRoster.roster_id) + getAttribute('median_wins', league.userRoster.roster_id)
+            const losses = getAttribute('losses', league.userRoster.roster_id) + getAttribute('median_losses', league.userRoster.roster_id)
             const ties = getAttribute('ties', league.userRoster.roster_id)
             const fpts = getAttribute('fpts', league.userRoster.roster_id)
             const fpts_against = getAttribute('fpts_against', league.userRoster.roster_id)
 
 
             const rank = Object.keys(projectionDict[hash]?.['1']?.[league.league_id] || {})
-                .sort((a, b) => getAttribute('wins', b) - getAttribute('wins', a) || getAttribute('fpts', b) - getAttribute('fpts', a))
+                .sort((a, b) => (getAttribute('wins', b) + getAttribute('median_wins', b)) - (getAttribute('wins', a) + getAttribute('median_wins', a)) || getAttribute('fpts', b) - getAttribute('fpts', a))
                 .indexOf(league.userRoster.roster_id.toString())
 
 
@@ -314,8 +322,8 @@ const LineupCheck = ({
     const projectedRecord = filterLeagues((stateLeagues || []), type1, type2)
         .reduce((acc, cur) => {
             return {
-                wins: acc.wins + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].wins || 0),
-                losses: acc.losses + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].losses || 0),
+                wins: acc.wins + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].wins || 0) + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].median_wins || 0),
+                losses: acc.losses + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].losses || 0) + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].median_losses || 0),
                 ties: acc.ties + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].ties || 0),
                 fpts: acc.fpts + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].fpts || 0),
                 fpts_against: acc.fpts_against + (projectionDict[hash]?.[week]?.[cur.league_id]?.[cur.userRoster.roster_id][recordType].fpts_against || 0),

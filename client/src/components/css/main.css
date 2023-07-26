@@ -57,6 +57,7 @@ option {
   font-weight: 900;
   font-size: 4rem;
   text-shadow: 0 0 1.5rem black;
+  position: relative;
 }
 
 .greenb {
@@ -65,6 +66,7 @@ option {
   font-weight: 900;
   font-size: 4rem;
   text-shadow: 0 0 1.5rem black;
+  position: relative;
 }
 
 .yellow {

@@ -95,11 +95,18 @@ const TeamMatchups = ({
                         colSpan: 2
                     },
                     {
-                        text: m?.userLineup ?
-                            (m?.[recordType]?.fpts > m?.[recordType]?.fpts_against ? 'W'
-                                : m?.[recordType]?.fpts < m?.[recordType]?.fpts_against ? 'L'
-                                    : 'T')
-                            : '-',
+                        text: <>
+                            {
+                                m?.userLineup ?
+                                    (m?.[recordType]?.fpts > m?.[recordType]?.fpts_against ? 'W'
+                                        : m?.[recordType]?.fpts < m?.[recordType]?.fpts_against ? 'L'
+                                            : 'T')
+                                    : '-'
+                            }
+                            {
+                                m?.[recordType]?.median_wins && <i className="fa-solid fa-trophy"></i>
+                            }
+                        </>,
                         colSpan: 1,
                         className: (m?.[recordType]?.fpts > m?.[recordType]?.fpts_against)
                             ? 'greenb'
