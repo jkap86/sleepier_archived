@@ -28,6 +28,7 @@ function start() {
     // Custom middleware to block IP addresses
     const blockIPMiddleware = (req, res, next) => {
         const clientIP = req.ip;
+        console.log({ IP: clientIP })
         const currentTime = Date.now();
 
         // Check if IP is blocked
@@ -48,7 +49,7 @@ function start() {
             const timeDifference = currentTime - lastRequestTime;
 
             // Check if the IP has made more than 5 requests within 5 seconds
-            if (count >= 30 && timeDifference < 30000) {
+            if (count >= 10 && timeDifference < 30000) {
                 blockedIPs.push(clientIP);
                 delete requestCounts[clientIP];
                 setTimeout(() => {
