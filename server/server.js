@@ -19,7 +19,7 @@ function start() {
 
     const app = express();
 
-    const blockedIPs = [];
+    const blockedIPs = ['::ffff:10.1.56.134', '::ffff:10.1.88.90'];
 
     // Custom middleware to block IP addresses
     const blockIPMiddleware = (req, res, next) => {

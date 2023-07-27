@@ -166,7 +166,6 @@ const Main = () => {
             };
             */
         } else if (week === 'All' && Object.keys(projectionDict[hash])?.length < 18 && !isLoadingProjectionDict) {
-            /*
             const worker = new Worker('/getRecordDictWeekWorker.js');
 
             console.log('Getting Projection Dict for week ' + week)
@@ -212,7 +211,6 @@ const Main = () => {
                     return () => worker.terminate();
                 }
             };
-            */
         } else if (syncing?.week && !isLoadingProjectionDict) {
             dispatch(setState({ isLoadingProjectionDict: true }, 'MAIN'));
 
