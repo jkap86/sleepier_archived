@@ -9,10 +9,6 @@ module.exports = (app, home_cache, user_cache) => {
         leagues.find(req, res, home_cache)
     });
 
-    router.post('/matchups', (req, res) => {
-        leagues.matchups(req, res, home_cache)
-    });
-
     router.post('/sync', (req, res) => {
         leagues.sync(req, res, home_cache, user_cache)
     })
