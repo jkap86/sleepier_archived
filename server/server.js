@@ -69,7 +69,7 @@ function start() {
     };
 
     // Apply the blockIPMiddleware to all routes
-    app.use(blockIPMiddleware);
+    // app.use(blockIPMiddleware);
 
 
 
