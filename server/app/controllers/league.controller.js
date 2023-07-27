@@ -8,6 +8,8 @@ const Op = db.Sequelize.Op;
 const NodeCache = require('node-cache');
 const cache = new NodeCache()
 const projections_json = require('../../projections.json');
+const allplayers_json = require('../../allplayers.json');
+const schedule_json = require('../../schedule.json');
 const workerpool = require('workerpool');
 const pool = workerpool.pool(__filename);
 
@@ -95,9 +97,9 @@ function splitIntoChunks(array, chunkSize) {
 }
 
 exports.matchups = async (req, res, home_cache) => {
-    const stateAllPlayers = home_cache.get('allplayers')
-    const stateNflSchedule = home_cache.get('schedule')
-    const projections = projections_json
+    const stateAllPlayers = allplayers_json;
+    const stateNflSchedule = schedule_json;
+    const projections = projections_json;
 
     let league_matchups_db;
 
@@ -196,9 +198,9 @@ exports.find = async (req, res, home_cache, cache) => {
     const user_id = req.userData.user_id
 
     const state = home_cache.get('state')
-    const allplayers = home_cache.get('allplayers')
-    const schedule = home_cache.get('schedule')
-    const projections = projections_json
+    const allplayers = allplayers_json;
+    const schedule = schedule_json;
+    const projections = projections_json;
 
 
 
@@ -704,7 +706,7 @@ exports.picktracker = async (req, res, home_cache) => {
 
 
     if (active_draft) {
-        const allplayers = home_cache.get('allplayers')
+        const allplayers = allplayers_json;
         const draft_picks = await axios.get(`https://api.sleeper.app/v1/draft/${active_draft.draft_id}/picks`)
         const users = await axios.get(`https://api.sleeper.app/v1/league/${req.body.league_id}/users`)
         const teams = Object.keys(active_draft.draft_order).length

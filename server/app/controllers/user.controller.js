@@ -8,7 +8,8 @@ const League = db.leagues;
 const leagues = require('../controllers/league.controller.js');
 const axios = require('../api/axiosInstance');
 const projections_json = require('../../projections.json');
-
+const allplayers_json = require('../../allplayers.json');
+const schedule_json = require('../../schedule.json');
 
 exports.create = async (req, res, next, home_cache, user_cache) => {
     console.log(`***SEARCHING FOR ${req.body.username}***`)
@@ -19,9 +20,9 @@ exports.create = async (req, res, next, home_cache, user_cache) => {
         console.log('user/leagues from cache...');
 
         const state = home_cache.get('state')
-        const allplayers = home_cache.get('allplayers')
-        const schedule = home_cache.get('schedule')
-        const projections = projections_json
+        const allplayers = allplayers_json;
+        const schedule = schedule_json;
+        const projections = projections_json;
 
         res.send({
             user: {

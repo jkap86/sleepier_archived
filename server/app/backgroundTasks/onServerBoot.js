@@ -1,5 +1,5 @@
 module.exports = async (home_cache) => {
-
+    const fs = require('fs');
     const ALLPLAYERS = require('../../allplayers.json');
 
     const getAllPlayers = async () => {
@@ -10,6 +10,8 @@ module.exports = async (home_cache) => {
             try {
                 sleeper_players = await axios.get('https://api.sleeper.app/v1/players/nfl')
                 sleeper_players = sleeper_players.data
+
+                fs.writeFileSync('./allplayers.json', JSON.stringify(sleeper_players))
 
             } catch (error) {
                 console.log(error)
@@ -57,8 +59,10 @@ module.exports = async (home_cache) => {
     nflschedule.data.fullNflSchedule.nflSchedule.map(matchups_week => {
         return schedule[matchups_week.week] = matchups_week.matchup
     })
-    home_cache.set('schedule', schedule, 0)
 
+    if (process.env.DATABASE_URL) {
+        fs.writeFileSync('./schedule.json', JSON.stringify(schedule))
+    }
 
     setTimeout(async () => {
         setInterval(async () => {
