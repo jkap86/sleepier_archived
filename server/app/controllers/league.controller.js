@@ -71,8 +71,8 @@ exports.find = async (req, res, home_cache, cache) => {
         const keys = ["name", "avatar", "settings", "scoring_settings", "roster_positions",
             "rosters", "drafts", "updatedAt"]
 
-        let keys_update = [...keys];
-        let keys_new = [...keys];
+        let keys_update = [];
+        let keys_new = [];
 
         if (state.display_week >= 0 && state.display_week < 19) {
             keys_update.push(`matchups_${Math.max(1, state.display_week)}`)
@@ -420,7 +420,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
 
 
             return {
-                league_id: league_db.league_id,
+                league_id: league.data.league_id,
                 name: league.data.name,
                 avatar: league.data.avatar,
                 season: league.data.season,
