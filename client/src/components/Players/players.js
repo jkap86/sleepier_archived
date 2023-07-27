@@ -15,7 +15,7 @@ import TrendModal from "./trendModal";
 
 const Players = ({ }) => {
     const dispatch = useDispatch();
-    const { isLoadingUser, errorUser, user } = useSelector((state) => state.user);
+    const { isLoadingUser, errorUser, leagues } = useSelector((state) => state.user);
     const { state, type1, type2, allPlayers } = useSelector(state => state.main);
     const { filteredData } = useSelector(state => state.filteredData);
     const players = useSelector(state => state.players)
@@ -26,7 +26,7 @@ const Players = ({ }) => {
     const initialLoadRef = useRef(null);
 
 
-    const leagues = user?.leagues || []
+
 
     const playersharesFiltered = filteredData?.players || []
 

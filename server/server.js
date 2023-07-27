@@ -19,6 +19,7 @@ function start() {
 
     const app = express();
 
+    app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
     // Object to store the IP addresses and their request count
     const requestCounts = {};
 
@@ -73,6 +74,7 @@ function start() {
         for (let key in used) {
             console.log(`${key} ${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB`);
         }
+        next()
     };
 
     // Apply the blockIPMiddleware to all routes

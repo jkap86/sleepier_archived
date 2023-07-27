@@ -7,12 +7,12 @@ import { filterLeagues } from './functions/filterLeagues';
 
 const Heading = () => {
     const dispatch = useDispatch();
-    const { user } = useSelector(state => state.user);
+    const { user, leagues } = useSelector(state => state.user);
     const { tab, state: stateState, type1, type2, } = useSelector(state => state.main);
 
 
 
-    const filteredLeagueCount = filterLeagues((user?.leagues || []), type1, type2)?.length
+    const filteredLeagueCount = filterLeagues((leagues || []), type1, type2)?.length
 
 
     return <>

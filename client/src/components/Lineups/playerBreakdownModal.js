@@ -8,7 +8,7 @@ const PlayerBreakdownModal = forwardRef(({
     player_id
 }, playerBreakdownRef) => {
     const dispatch = useDispatch();
-    const { user } = useSelector(state => state.user);
+    const { leagues } = useSelector(state => state.user);
     const { allPlayers, projections, projectionDict } = useSelector(state => state.main);
     const { playerBreakdownModal, week } = useSelector(state => state.lineups);
     const [projectionEdits, setProjectionEdits] = useState({});
@@ -108,7 +108,7 @@ const PlayerBreakdownModal = forwardRef(({
 
     const stat_categories = useMemo(() => {
         return Array.from(
-            new Set(user.leagues
+            new Set(leagues
                 .flatMap(league =>
                     Object.keys(league.scoring_settings || {})
                         .filter(
@@ -133,7 +133,7 @@ const PlayerBreakdownModal = forwardRef(({
                     return b.localeCompare(a);
                 }
             })
-    }, [user.leagues])
+    }, [leagues])
 
 
 
