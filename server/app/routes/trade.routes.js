@@ -5,7 +5,7 @@ module.exports = app => {
 
     var router = require("express").Router();
 
-    router.post('/leaguemate', trades.leaguemate)
+    // router.post('/leaguemate', trades.leaguemate)
 
     router.post('/pricecheck', trades.pricecheck)
 
