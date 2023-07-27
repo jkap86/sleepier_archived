@@ -7,7 +7,7 @@ module.exports = app => {
 
     router.post("/stats", dynastyrankings.stats)
 
-    // router.post("/find", dynastyrankings.find)
+    router.post("/find", dynastyrankings.find)
 
     router.post("/findrange", dynastyrankings.findrange)
 
