@@ -19,12 +19,12 @@ function start() {
 
     const app = express();
 
-    const blockedIPs = ['::ffff:10.1.56.134', '::ffff:10.1.88.90'];
+    const blockedIPs = [];
 
     // Custom middleware to block IP addresses
     const blockIPMiddleware = (req, res, next) => {
         const clientIP = req.ip; // Express provides the client's IP in the req.ip property
-        console.log({ IPAddress: req.ip })
+
         if (blockedIPs.includes(clientIP)) {
             return res.status(403).send('Access denied: Your IP is blocked.');
         }

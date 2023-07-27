@@ -9,6 +9,7 @@ const NodeCache = require('node-cache');
 const cache_trades = new NodeCache()
 
 exports.leaguemate = async (req, res) => {
+    console.log(req.body)
     const trades_cache = cache_trades.get(`${req.body.user_id}_${req.body.manager}_${req.body.player}_${req.body.offset}_${req.body.limit}`)
 
     if (trades_cache) {
