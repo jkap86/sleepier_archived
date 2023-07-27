@@ -14,7 +14,7 @@ const LmTrades = ({
     const dispatch = useDispatch();
     const trades = useSelector(state => state.trades);
     const { state: stateState } = useSelector(state => state.main);
-    const { user } = useSelector(state => state.user);
+    const { user, leagues } = useSelector(state => state.user);
 
 
     const tradesDisplay = (!trades.lmTrades.searched_player?.id && !trades.lmTrades.searched_manager?.id)
@@ -51,7 +51,7 @@ const LmTrades = ({
         console.log('LOADING MORE')
 
         if (trades.lmTrades.searched_player === '' && trades.lmTrades.searched_manager === '') {
-            dispatch(fetchLmTrades(user.user_id, user.leagues, stateState.league_season, trades.lmTrades.trades.length, 125))
+            dispatch(fetchLmTrades(user.user_id, leagues, stateState.league_season, trades.lmTrades.trades.length, 125))
         } else {
             dispatch(fetchFilteredLmTrades(trades.lmTrades.searched_player.id, trades.lmTrades.searched_manager.id, stateState.league_season, tradesDisplay.length, 125))
         }
@@ -79,7 +79,7 @@ const LmTrades = ({
 
     const managers_list = []
 
-    user.leagues
+    leagues
         .forEach(league => {
             league.rosters
                 .filter(r => parseInt(r.user_id) > 0)

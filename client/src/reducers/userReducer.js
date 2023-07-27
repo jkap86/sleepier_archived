@@ -33,7 +33,11 @@ const userReducer = (state = initialState, action) => {
             return {
                 ...state,
                 isLoadingUser: false,
-                user: action.payload,
+                user: {
+                    user_id: action.payload.user_id,
+                    username: action.payload.username,
+                    avatar: action.payload.avatar
+                },
                 leagues: leagues
 
 

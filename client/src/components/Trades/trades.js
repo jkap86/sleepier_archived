@@ -13,7 +13,7 @@ const Trades = () => {
     const dispatch = useDispatch();
     const trades = useSelector(state => state.trades);
     const { state: stateState, allPlayers } = useSelector(state => state.main);
-    const { user } = useSelector(state => state.user);
+    const { leagues } = useSelector(state => state.user);
 
     const picks_list = []
 
@@ -48,7 +48,7 @@ const Trades = () => {
     const players_list = [
         ...Array.from(
             new Set(
-                user.leagues.map(league => league.rosters?.map(roster => roster.players)).flat(3)
+                leagues.map(league => league.rosters?.map(roster => roster.players)).flat(3)
             )
         ).map(player_id => {
             return {

@@ -265,7 +265,7 @@ export const fetchFilteredLmTrades = (searchedPlayerId, searchedManagerId, leagu
             limit: limit,
         });
         console.log(trades.data)
-        const trades_tips = getTradeTips(trades.data.rows, user.user.leagues, league_season)
+        const trades_tips = getTradeTips(trades.data.rows, user.leagues, league_season)
         console.log(trades_tips)
         dispatch({
             type: 'FETCH_FILTERED_LMTRADES_SUCCESS',
@@ -298,7 +298,7 @@ export const fetchPriceCheckTrades = (pricecheck_player, pricecheck_player2, off
             limit: limit
         })
 
-        const trades_tips = getTradeTips(player_trades.data.rows, user.user.leagues, main.state.league_season)
+        const trades_tips = getTradeTips(player_trades.data.rows, user.leagues, main.state.league_season)
 
         dispatch({
             type: 'FETCH_PRICECHECKTRADES_SUCCESS',
