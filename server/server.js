@@ -27,6 +27,7 @@ function start() {
 
     // Custom middleware to block IP addresses
     const blockIPMiddleware = (req, res, next) => {
+        /*
         const clientIP = req.ip;
         console.log({ IP: clientIP })
         const currentTime = Date.now();
@@ -66,10 +67,16 @@ function start() {
             }
             next();
         }
+        */
+
+        const used = process.memoryUsage()
+        for (let key in used) {
+            console.log(`${key} ${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB`);
+        }
     };
 
     // Apply the blockIPMiddleware to all routes
-    // app.use(blockIPMiddleware);
+    app.use(blockIPMiddleware);
 
 
 
