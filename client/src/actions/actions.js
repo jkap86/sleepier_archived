@@ -298,7 +298,7 @@ export const fetchPriceCheckTrades = (pricecheck_player, pricecheck_player2, off
             limit: limit
         })
 
-        const trades_tips = getTradeTips(player_trades.data.rows, user.user.leagues, main.state.league_season)
+        const trades_tips = getTradeTips(player_trades.data.rows, user.leagues, main.state.league_season)
 
         dispatch({
             type: 'FETCH_PRICECHECKTRADES_SUCCESS',
