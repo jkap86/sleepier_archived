@@ -68,17 +68,52 @@ export const fetchUser = (username) => {
     return async (dispatch) => {
         dispatch({ type: 'FETCH_USER_START' });
 
+        let allplayers_timestamp;
+
         try {
-            const response = await axios.post('/user/create', { username });
+            allplayers_timestamp = JSON.parse(localStorage.getItem('allplayers'))?.timestamp
+        } catch (error) {
+            console.log(error)
+        }
+
+
+        let projections_timestamp;
+
+        try {
+            projections_timestamp = JSON.parse(localStorage.getItem('projections'))?.timestamp
+        } catch (error) {
+            console.log(error)
+        }
+
+        try {
+            const response = await axios.post('/user/create', {
+                username: username,
+                allplayers: allplayers_timestamp > (new Date().getTime() - 24 * 60 * 60 * 1000) ? false : true,
+                projections: projections_timestamp > (new Date().getTime() - 15 * 60 * 1000) ? false : true
+            });
             console.log(response.data)
+
+            if (response.data.allplayers) {
+                const allplayers_string = JSON.stringify({ data: response.data.allplayers, timestamp: new Date().getTime() });
+
+                localStorage.setItem('allplayers', allplayers_string)
+            }
+
+            if (response.data.projections) {
+                const projections_string = JSON.stringify({ data: response.data.projections, timestamp: new Date().getTime() });
+
+                localStorage.setItem('projections', projections_string)
+            }
+
             if (!response.data?.error) {
                 dispatch({ type: 'FETCH_USER_SUCCESS', payload: response.data.user });
+
                 dispatch({
                     type: 'FETCH_MAIN_SUCCESS', payload: {
                         state: response.data.state,
-                        allplayers: JSON.parse(response.data.allplayers),
+                        allplayers: JSON.parse(response.data.allplayers) || JSON.parse(JSON.parse(localStorage.getItem('allplayers')).data),
                         schedule: JSON.parse(response.data.schedule),
-                        projections: JSON.parse(response.data.projections)
+                        projections: JSON.parse(response.data.projections) || JSON.parse(JSON.parse(localStorage.getItem('projections')).data)
                     }
                 });
             } else {
