@@ -97,7 +97,7 @@ exports.leaguemate = async (req, res) => {
         }
 
         const trades_to_send = {
-            ...lmTrades,
+            rows: JSON.stringify(lmTrades.rows),
             count: lmTrades?.count?.length
         }
 

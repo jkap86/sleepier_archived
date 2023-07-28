@@ -16,6 +16,7 @@ function start() {
     const NodeCache = require('node-cache');
     const home_cache = new NodeCache();
     const user_cache = new NodeCache();
+    require('dotenv').config();
 
     const app = express();
 

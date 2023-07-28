@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import React, { useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useCallback, useMemo, useRef } from "react";
 import { loadingIcon } from "./functions/misc";
 import { useDispatch, useSelector } from "react-redux";
 import { resetState, fetchUser, fetchFilteredData, fetchLmTrades, syncLeague, setState } from "../../actions/actions";
@@ -20,6 +20,7 @@ const Main = () => {
     const { tab, state, projections, allPlayers: stateAllPlayers, nflSchedule: stateNflSchedule, projectionDict, isLoadingProjectionDict } = useSelector(state => state.main);
     const { rankings, includeTaxi, includeLocked, week, syncing } = useSelector(state => state.lineups)
     const { isLoadingData } = useSelector(state => state.filteredData);
+    const initialLoadRef = useRef(null)
 
     const hash = `${includeTaxi}-${includeLocked}`;
 
@@ -55,10 +56,11 @@ const Main = () => {
 
 
     useEffect(() => {
-        if (user.user_id && leagues.length > 0) {
+        if (user.user_id && leagues.length > 0 && tab === 'trades' && !initialLoadRef.current) {
             dispatch(fetchLmTrades(user.user_id, leagues, state.league_season, 0, 125))
+            initialLoadRef.current = true
         }
-    }, [user, leagues, dispatch])
+    }, [user, leagues, tab, dispatch])
 
 
     useEffect(() => {

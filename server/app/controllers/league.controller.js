@@ -248,7 +248,7 @@ exports.find = async (req, res, home_cache, cache) => {
     const new_leagues = await getBatchLeaguesDetails(leagues_to_add, state.display_week)
     const updated_leagues = await getBatchLeaguesDetails(leagues_to_update, state.display_week)
 
-    const all_leagues = [...new_leagues, ...updated_leagues]
+    const all_leagues = [new_leagues, updated_leagues].flat().filter(result => result !== undefined)
 
 
 
@@ -256,10 +256,8 @@ exports.find = async (req, res, home_cache, cache) => {
         const keys = ["name", "avatar", "settings", "scoring_settings", "roster_positions",
             "rosters", "drafts", `matchups_${Math.max(1, state.display_week)}`, "updatedAt"]
 
-        console.log([...new_leagues, ...updated_leagues][0])
 
-
-        await League.bulkCreate([...new_leagues, ...updated_leagues], {
+        await League.bulkCreate(all_leagues, {
             updateOnDuplicate: keys
         })
     } catch (error) {
@@ -274,9 +272,7 @@ exports.find = async (req, res, home_cache, cache) => {
 
 
     all_leagues
-        .filter(result => result !== undefined)
         .forEach(league => {
-
             league.users.forEach(user => {
                 user_data.push({
                     user_id: user.user_id,
@@ -306,16 +302,16 @@ exports.find = async (req, res, home_cache, cache) => {
     }
 
 
-    const leagues_to_send = [new_leagues, updated_leagues, leagues_up_to_date].flat()
+    const leagues_to_send = JSON.stringify([new_leagues, updated_leagues, leagues_up_to_date].flat()
         .filter(league => league !== undefined && league.rosters.find(roster => roster?.players?.length > 0))
-        .sort((a, b) => leagues.data.findIndex(x => x.league_id === a.league_id) - leagues.data.findIndex(x => x.league_id === b.league_id))
+        .sort((a, b) => leagues.data.findIndex(x => x.league_id === a.league_id) - leagues.data.findIndex(x => x.league_id === b.league_id)))
 
 
     try {
-        if (!(leagues_to_send.filter(result => result === undefined)?.length > 0)) {
+        if (!([new_leagues, updated_leagues, leagues_up_to_date].flat().filter(result => result === undefined)?.length > 0)) {
             cache.set(req.userData.username.toLowerCase(), {
                 ...req.userData,
-                leagues: JSON.stringify(leagues_to_send)
+                leagues: leagues_to_send
             }, 15 * 60)
         }
     } catch (error) {
@@ -611,7 +607,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, sync) => {
 
     const allResults = [];
 
-    const chunkSize = 50;
+    const chunkSize = 10;
 
     for (let i = 0; i < leagues.length; i += chunkSize) {
         const chunk = leagues.slice(i, i + chunkSize);

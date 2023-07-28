@@ -233,9 +233,9 @@ export const fetchLmTrades = (user_id, leagues, season, offset, limit) => {
                 limit: limit
             })
 
-            console.log(new Date(parseInt(trades.data.rows.sort((a, b) => new Date(b.status_updated) - new Date(a.status_updated))[124].status_updated)));
 
-            const trades_tips = getTradeTips(trades.data.rows, leagues, season)
+
+            const trades_tips = getTradeTips(JSON.parse(trades.data.rows), leagues, season)
             console.log({ trades_tips: trades_tips })
             dispatch({
                 type: 'FETCH_LMTRADES_SUCCESS', payload: {

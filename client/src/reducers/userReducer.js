@@ -16,7 +16,7 @@ const userReducer = (state = initialState, action) => {
         case 'FETCH_USER_SUCCESS':
             const user_id = action.payload.user_id;
 
-            const leagues = action.payload.leagues
+            const leagues = JSON.parse(action.payload.leagues)
                 .filter(league => league.rosters
                     ?.find(r => r.user_id === user_id || r.co_owners?.find(co => co?.user_id === user_id))
                 )
