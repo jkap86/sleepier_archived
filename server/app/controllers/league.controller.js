@@ -456,7 +456,11 @@ const getBatchLeaguesDetails = async (leagues, display_week, sync) => {
 
             //  update current week matchup for existing leagues, get all season matchups through current weekk for new leagues
 
-            let matchups = {}
+            let matchups = Object.fromEntries(
+                Object.keys(league_db)
+                    .filter(key => key.startsWith('matchups_'))
+                    .map(key => [key, league_db[key]])
+            )
 
             if (sync) {
                 try {

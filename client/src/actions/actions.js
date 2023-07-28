@@ -96,13 +96,21 @@ export const fetchUser = (username) => {
             if (response.data.allplayers) {
                 const allplayers_string = JSON.stringify({ data: response.data.allplayers, timestamp: new Date().getTime() });
 
-                localStorage.setItem('allplayers', allplayers_string)
+                try {
+                    localStorage.setItem('allplayers', allplayers_string)
+                } catch (error) {
+                    console.log(error.message)
+                }
             }
 
             if (response.data.projections) {
                 const projections_string = JSON.stringify({ data: response.data.projections, timestamp: new Date().getTime() });
 
-                localStorage.setItem('projections', projections_string)
+                try {
+                    localStorage.setItem('projections', projections_string)
+                } catch (error) {
+                    console.log(error.message)
+                }
             }
 
             if (!response.data?.error) {
