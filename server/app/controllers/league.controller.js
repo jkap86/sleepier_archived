@@ -315,7 +315,7 @@ exports.find = async (req, res, home_cache, cache) => {
         if (!(leagues_to_send.filter(result => result === undefined)?.length > 0)) {
             cache.set(req.userData.username.toLowerCase(), {
                 ...req.userData,
-                leagues: JSON.stringify(leagues_to_send)
+                leagues: leagues_to_send
             }, 15 * 60)
         }
     } catch (error) {
