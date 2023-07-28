@@ -6,8 +6,8 @@ module.exports = app => {
     const { logMemUsage } = require('../helpers/logMemUsage.js');
 
     const dynastyrankingsLimiter = rateLimit({
-        windowMs: 60 * 1000,
-        max: 10
+        windowMs: 10 * 60 * 1000,
+        max: 100
     })
 
     var router = require("express").Router();
