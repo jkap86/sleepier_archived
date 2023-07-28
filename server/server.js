@@ -20,66 +20,6 @@ function start() {
     const app = express();
 
     app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
-    // Object to store the IP addresses and their request count
-    const requestCounts = {};
-
-    // Array to store temporarily blocked IP addresses
-    const blockedIPs = [];
-
-    // Custom middleware to block IP addresses
-    const blockIPMiddleware = (req, res, next) => {
-        /*
-        const clientIP = req.ip;
-        console.log({ IP: clientIP })
-        const currentTime = Date.now();
-
-        // Check if IP is blocked
-        if (blockedIPs.includes(clientIP)) {
-            console.log(`${clientIP} blocked...`)
-            return res.status(403).send('Access denied: Your IP is blocked.');
-        }
-
-        // Initialize request count for IP if not present
-        if (!requestCounts[clientIP]) {
-            requestCounts[clientIP] = {
-                count: 1,
-                lastRequestTime: currentTime,
-            };
-            next();
-        } else {
-            const { count, lastRequestTime } = requestCounts[clientIP];
-            const timeDifference = currentTime - lastRequestTime;
-
-            // Check if the IP has made more than 5 requests within 5 seconds
-            if (count >= 10 && timeDifference < 30000) {
-                blockedIPs.push(clientIP);
-                delete requestCounts[clientIP];
-                setTimeout(() => {
-                    blockedIPs.splice(blockedIPs.indexOf(clientIP), 1);
-                }, 5 * 60 * 1000); // Unblock the IP after 1 hour
-                return res.status(429).send('Too many requests. Please try again later.');
-            } else if (timeDifference >= 30000) {
-                // Reset request count and last request time after 5 seconds
-                requestCounts[clientIP].count = 1;
-                requestCounts[clientIP].lastRequestTime = currentTime;
-            } else {
-                // Increment the request count if less than 5 seconds have passed
-                requestCounts[clientIP].count += 1;
-            }
-            next();
-        }
-        */
-
-        const used = process.memoryUsage()
-        for (let key in used) {
-            console.log(`${key} ${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB`);
-        }
-        next()
-    };
-
-    // Apply the blockIPMiddleware to all routes
-    app.use(blockIPMiddleware);
-
 
 
     app.use(compression())

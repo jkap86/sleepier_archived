@@ -3,6 +3,7 @@
 module.exports = app => {
     const rateLimit = require('express-rate-limit');
     const trades = require("../controllers/trade.controller.js");
+    const { logMemUsage } = require('../helpers/logMemUsage.js');
 
     const tradeLimiter = rateLimit({
         windowMs: 60 * 1000,
@@ -11,9 +12,9 @@ module.exports = app => {
 
     var router = require("express").Router();
 
-    router.post('/leaguemate', tradeLimiter, trades.leaguemate)
+    router.post('/leaguemate', tradeLimiter, logMemUsage, trades.leaguemate)
 
-    router.post('/pricecheck', trades.pricecheck)
+    router.post('/pricecheck', tradeLimiter, logMemUsage, trades.pricecheck)
 
     app.use('/trade', router);
 }

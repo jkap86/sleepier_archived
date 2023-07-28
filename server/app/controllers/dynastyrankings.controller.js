@@ -24,7 +24,7 @@ exports.find = async (req, res) => {
                     }
                 ]
             },
-
+            raw: true
         })
 
         cache.set(`${req.body.date1}_${req.body.date2}`, values, 1800)
@@ -62,7 +62,7 @@ exports.stats = async (req, res) => {
                 && req.body.players?.includes(s.player_id)
                 && s.stats.pts_ppr
             )
-            .map(stats_object => {
+            .forEach(stats_object => {
                 if (!stats_data[stats_object.player_id]) {
                     stats_data[stats_object.player_id] = []
                 }

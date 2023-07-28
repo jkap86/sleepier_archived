@@ -27,7 +27,7 @@ exports.create = async (req, res, next, home_cache, user_cache) => {
         res.send({
             user: {
                 ...user_from_cache,
-                leagues: JSON.parse(user_from_cache.leagues)
+                leagues: user_from_cache.leagues
             },
             state: state,
             allplayers: allplayers,

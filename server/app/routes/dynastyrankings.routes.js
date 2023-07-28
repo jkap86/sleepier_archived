@@ -3,6 +3,7 @@
 module.exports = app => {
     const rateLimit = require('express-rate-limit');
     const dynastyrankings = require("../controllers/dynastyrankings.controller.js");
+    const { logMemUsage } = require('../helpers/logMemUsage.js');
 
     const dynastyrankingsLimiter = rateLimit({
         windowMs: 60 * 1000,
@@ -11,11 +12,11 @@ module.exports = app => {
 
     var router = require("express").Router();
 
-    router.post("/stats", dynastyrankingsLimiter, dynastyrankings.stats)
+    router.post("/stats", dynastyrankingsLimiter, logMemUsage, dynastyrankings.stats)
 
-    router.post("/find", dynastyrankingsLimiter, dynastyrankings.find)
+    router.post("/find", dynastyrankingsLimiter, logMemUsage, dynastyrankings.find)
 
-    router.post("/findrange", dynastyrankingsLimiter, dynastyrankings.findrange)
+    router.post("/findrange", dynastyrankingsLimiter, logMemUsage, dynastyrankings.findrange)
 
     app.use('/dynastyrankings', router);
 }

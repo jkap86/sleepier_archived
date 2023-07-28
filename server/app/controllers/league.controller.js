@@ -208,42 +208,45 @@ exports.find = async (req, res, home_cache, cache) => {
 
     let leagues = await axios.get(`https://api.sleeper.app/v1/user/${user_id}/leagues/nfl/${state.league_season}`)
 
-
-
-    try {
-        const deleted = await sequelize.model('userLeagues').destroy({
-            where: {
-                [Op.and]: [
-                    {
-                        userUserId: user_id
-                    },
-                    {
-                        leagueLeagueId: {
-                            [Op.not]: leagues.data.map(league => league.league_id)
-                        }
-                    }
-                ]
-            }
-        })
-
-        if (deleted > 0) {
-            console.log(`${deleted} associations deleted for user ${user_id}`)
-        }
-
-    } catch (error) {
-        console.log(error)
-    }
-
     const [leagues_to_add, leagues_to_update, leagues_up_to_date] = await getLeaguesToUpsert(user_id, leagues.data)
+
+    /*
+    
+        try {
+            const deleted = await sequelize.model('userLeagues').destroy({
+                where: {
+                    [Op.and]: [
+                        {
+                            userUserId: user_id
+                        },
+                        {
+                            leagueLeagueId: {
+                                [Op.not]: leagues.data.map(league => league.league_id)
+                            }
+                        }
+                    ]
+                }
+            })
+    
+            if (deleted > 0) {
+                console.log(`${deleted} associations deleted for user ${user_id}`)
+            }
+    
+        } catch (error) {
+            console.log(error)
+        }
+    */
+
 
     console.log(leagues_to_add.length + ' new leagues')
     console.log(leagues_to_update.length + ' to update leagues')
     console.log(leagues_up_to_date.length + ' up to date leagues')
 
+    console.log({ new_leagues: leagues_to_add[0]?.name })
     //  get updated data for leagues_to_add and leagues_to_update
 
-    const new_leagues = await getBatchLeaguesDetails(leagues_to_add, state.display_week, true)
-    const updated_leagues = await getBatchLeaguesDetails(leagues_to_update, state.display_week, false)
+    const new_leagues = await getBatchLeaguesDetails(leagues_to_add, state.display_week)
+    const updated_leagues = await getBatchLeaguesDetails(leagues_to_update, state.display_week)
 
     const all_leagues = [...new_leagues, ...updated_leagues]
 
@@ -251,24 +254,14 @@ exports.find = async (req, res, home_cache, cache) => {
 
     try {
         const keys = ["name", "avatar", "settings", "scoring_settings", "roster_positions",
-            "rosters", "drafts", "updatedAt"]
+            "rosters", "drafts", `matchups_${Math.max(1, state.display_week)}`, "updatedAt"]
 
-        let keys_update = [...keys];
-        let keys_new = [...keys];
+        console.log([...new_leagues, ...updated_leagues][0])
 
-        if (state.display_week >= 0 && state.display_week < 19) {
-            keys_update.push(`matchups_${Math.max(1, state.display_week)}`)
-            keys_new.push(...Array.from(Array(18).keys()).map(key => `matchups_${key + 1}`))
-        }
 
-        await League.bulkCreate(new_leagues, {
-            updateOnDuplicate: keys_new
+        await League.bulkCreate([...new_leagues, ...updated_leagues], {
+            updateOnDuplicate: keys
         })
-
-        await League.bulkCreate(updated_leagues, {
-            updateOnDuplicate: keys_update
-        })
-
     } catch (error) {
         console.log(error)
     }
@@ -312,7 +305,8 @@ exports.find = async (req, res, home_cache, cache) => {
         console.log(error)
     }
 
-    const leagues_to_send = [...new_leagues, ...updated_leagues, ...leagues_up_to_date]
+
+    const leagues_to_send = [new_leagues, updated_leagues, leagues_up_to_date].flat()
         .filter(league => league !== undefined && league.rosters.find(roster => roster?.players?.length > 0))
         .sort((a, b) => leagues.data.findIndex(x => x.league_id === a.league_id) - leagues.data.findIndex(x => x.league_id === b.league_id))
 
@@ -347,42 +341,45 @@ const getLeaguesToUpsert = async (user_id, leagues) => {
     let user;
 
     try {
-        user = await User.findByPk(user_id, {
-            include: {
-                model: League
-            }
+
+
+        user = await League.findAll({
+            where: {
+                league_id: leagues.map(league => league.league_id)
+            },
+            raw: true
         })
     } catch (error) {
         console.log(error)
     }
 
-    let leagues_user_db = user.leagues.map(league => league.dataValues || league)
 
     //  split leagues into - leagues_to_add: not in db; leagues_to_update: in db but not updated in last 24hrs; 
     //  leagues_up_to_date: in db and updated within 24 hrs
 
-    const cutoff = new Date(new Date() - (24 * 60 * 60 * 1000))
+    const cutoff = new Date(new Date() - (24 * 60 * 60 * 1000));
 
-    const leagues_to_add = leagues
-        .filter(l =>
-            !leagues_user_db?.find(l_db => l_db.league_id === l.league_id)
-        )
+    const leagues_to_add = [];
+    const leagues_to_update = [];
+    const leagues_up_to_date = [];
 
-    const leagues_to_update = leagues_user_db
-        .filter(l_db =>
-            l_db.updatedAt < cutoff
-        )
+    for (const league of leagues) {
+        const leagueData = user.find(l_db => l_db.league_id === league.league_id);
+        const leagueLastUpdated = leagueData && new Date(leagueData.updatedAt);
 
-    const leagues_up_to_date = leagues_user_db
-        .filter(l_db =>
-            l_db.updatedAt >= cutoff
-        )
-
+        if (!leagueData) {
+            leagues_to_add.push(league);
+        } else if (leagueLastUpdated < cutoff) {
+            leagues_to_update.push(leagueData);
+        } else {
+            leagues_up_to_date.push(leagueData);
+        }
+    }
     return [leagues_to_add, leagues_to_update, leagues_up_to_date]
 }
 
-const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) => {
-    const getLeagueDetails = async (league_db, display_week, new_league, sync) => {
+const getBatchLeaguesDetails = async (leagues, display_week, sync) => {
+    const getLeagueDetails = async (league_db, display_week, sync) => {
         const getDraftPicks = (traded_picks, rosters, users, drafts, league) => {
             let draft_season;
             if (drafts.find(x => x.status !== 'complete' && x.settings.rounds === league.settings.draft_rounds)) {
@@ -420,9 +417,9 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
                 }
 
                 traded_picks.filter(x => x.owner_id === rosters[i].roster_id && parseInt(x.season) >= draft_season)
-                    .map(pick => {
+                    .forEach(pick => {
                         const original_user = users.find(u => rosters.find(r => r.roster_id === pick.roster_id)?.owner_id === u.user_id)
-                        return original_picks[rosters[i].roster_id].push({
+                        original_picks[rosters[i].roster_id].push({
                             season: parseInt(pick.season),
                             round: pick.round,
                             roster_id: pick.roster_id,
@@ -436,7 +433,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
                     })
 
                 traded_picks.filter(x => x.previous_owner_id === rosters[i].roster_id)
-                    .map(pick => {
+                    .forEach(pick => {
                         const index = original_picks[rosters[i].roster_id].findIndex(obj => {
                             return obj.season === pick.season && obj.round === pick.round && obj.roster_id === pick.roster_id
                         })
@@ -463,11 +460,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
 
             //  update current week matchup for existing leagues, get all season matchups through current weekk for new leagues
 
-            let matchups = Object.fromEntries(
-                Object.keys(league_db)
-                    .filter(key => key.startsWith('matchups_'))
-                    .map(key => [key, league_db[key]])
-            )
+            let matchups = {}
 
             if (sync) {
                 try {
@@ -500,9 +493,12 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
                             }))
                     }
                     */
+
                 } catch (error) {
                     console.log(error)
                 }
+            } else {
+                matchups[`matchups_${Math.max(display_week, 1)}`] = []
             }
 
 
@@ -620,7 +616,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
     for (let i = 0; i < leagues.length; i += chunkSize) {
         const chunk = leagues.slice(i, i + chunkSize);
         const chunkResults = await Promise.all(chunk.map(async (league) => {
-            const result = await getLeagueDetails(league.dataValues || league, display_week, new_league, sync);
+            const result = await getLeagueDetails(league, display_week, sync);
             return result !== null ? result : undefined;
         }));
         allResults.push(...chunkResults);
