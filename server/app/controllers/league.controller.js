@@ -323,9 +323,9 @@ exports.find = async (req, res, home_cache, cache) => {
             leagues: leagues_to_send
         },
         state: state,
-        allplayers: allplayers,
-        schedule: schedule,
-        projections: projections
+        allplayers: JSON.stringify(allplayers),
+        schedule: JSON.stringify(schedule),
+        projections: JSON.stringify(projections)
     })
 }
 

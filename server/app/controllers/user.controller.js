@@ -30,9 +30,9 @@ exports.create = async (req, res, next, home_cache, user_cache) => {
                 leagues: user_from_cache.leagues
             },
             state: state,
-            allplayers: allplayers,
-            schedule: schedule,
-            projections: projections
+            allplayers: JSON.stringify(allplayers),
+            schedule: JSON.stringify(schedule),
+            projections: JSON.stringify(projections)
         })
     } else {
         // check if user exists in Sleeper.  Update info if exists, send error message if not.

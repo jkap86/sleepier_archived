@@ -76,9 +76,9 @@ export const fetchUser = (username) => {
                 dispatch({
                     type: 'FETCH_MAIN_SUCCESS', payload: {
                         state: response.data.state,
-                        allplayers: response.data.allplayers,
-                        schedule: response.data.schedule,
-                        projections: response.data.projections
+                        allplayers: JSON.parse(response.data.allplayers),
+                        schedule: JSON.parse(response.data.schedule),
+                        projections: JSON.parse(response.data.projections)
                     }
                 });
             } else {

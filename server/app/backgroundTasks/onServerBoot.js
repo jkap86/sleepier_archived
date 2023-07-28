@@ -9,7 +9,28 @@ module.exports = async (home_cache) => {
         if (process.env.DATABASE_URL) {
             try {
                 sleeper_players = await axios.get('https://api.sleeper.app/v1/players/nfl')
-                sleeper_players = sleeper_players.data
+
+                sleeper_players = Object.fromEntries(Object.keys(sleeper_players.data)
+                    .filter(player_id => sleeper_players.data[player_id].active && ['QB', 'RB', 'FB', 'WR', 'TE', 'K'].includes(sleeper_players.data[player_id].position))
+                    .map(key => {
+                        const { position, college, number, birth_date, age, full_name, active, team, player_id, search_full_name } = sleeper_players.data[key];
+                        return [
+                            key,
+                            {
+                                position,
+                                college,
+                                number,
+                                birth_date,
+                                age,
+                                full_name,
+                                active,
+                                team,
+                                player_id,
+                                search_full_name
+                            }
+                        ]
+                    }
+                    ))
 
                 fs.writeFileSync('./allplayers.json', JSON.stringify(sleeper_players))
 
@@ -21,12 +42,6 @@ module.exports = async (home_cache) => {
 
             sleeper_players = ALLPLAYERS
         }
-
-        const active_players = Object.fromEntries(
-            Object.entries(sleeper_players).filter(([key, value]) => value.active && ['QB', 'RB', 'FB', 'WR', 'TE', 'K'].includes(value.position))
-        );
-
-        return active_players
     }
 
     //  set delay so interval is at 3am eastern 

@@ -58,7 +58,7 @@ const getProjections = async (season, week) => {
             .map(p => {
                 const ppr_score = getPlayerScore([p], ppr_scoring_settings, true)
                 return {
-                    ...p,
+                    player_id: p.player_id,
                     stats: {
                         ...p.stats,
                         pts_ppr: ppr_score
