@@ -486,6 +486,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
                     const matchup_week = await axios.get(`https://api.sleeper.app/v1/league/${league_db.league_id}/matchups/${Math.max(display_week, 1)}`)
                     matchups[`matchups_${Math.max(display_week, 1)}`] = matchup_week.data
 
+                    /*
                     if (new_league) {
 
 
@@ -498,6 +499,7 @@ const getBatchLeaguesDetails = async (leagues, display_week, new_league, sync) =
 
                             }))
                     }
+                    */
                 } catch (error) {
                     console.log(error)
                 }
